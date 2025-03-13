@@ -1,0 +1,454 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|c:\\users\\eprod\\git\\quizapp\\mobile\\activities\\dashboardactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:activities\\dashboardactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\layout\\activity_dashboard.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\layout\\activity_dashboard.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\activities\\takequizactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:activities\\takequizactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\activities\\quizlistactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:activities\\quizlistactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\activities\\quizdetailactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:activities\\quizdetailactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\activities\\mainactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:activities\\mainactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\drawable\\ic_incorrect.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\drawable\\ic_incorrect.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\drawable\\ic_correct.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\drawable\\ic_correct.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\activities\\quizresultactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:activities\\quizresultactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\layout\\layout_question_result_item.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\layout\\layout_question_result_item.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\drawable\\splash_screen.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\drawable\\splash_screen.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\layout\\activity_quiz_result.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\layout\\activity_quiz_result.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\layout\\activity_main.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\layout\\activity_main.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\aboutresources.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\aboutresources.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\drawable\\button_background.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\drawable\\button_background.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\properties\\androidmanifest.xml||{4E01A4BC-CFCF-452C-8C08-51352512D197}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:properties\\androidmanifest.xml||{4E01A4BC-CFCF-452C-8C08-51352512D197}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\mainactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:mainactivity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\drawable\\gradient_background.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\drawable\\gradient_background.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\drawable\\edit_text_background.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\drawable\\edit_text_background.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\drawable\\button_outline_background.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\drawable\\button_outline_background.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\values\\styles.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\values\\styles.xml||{6B79B2C4-8503-4A04-8248-ADCEF2B49CB1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\values\\colors.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\values\\colors.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\values\\ic_launcher_background.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\values\\ic_launcher_background.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\values\\strings.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\values\\strings.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\resources\\values\\styles.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{712CC911-2295-4AE1-904B-9807BC902E13}|Mobile.csproj|solutionrelative:resources\\values\\styles.xml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ApiService.cs",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Services\\ApiService.cs",
+              "RelativeDocumentMoniker": "Services\\ApiService.cs",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Services\\ApiService.cs",
+              "RelativeToolTip": "Services\\ApiService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvw4AAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-13T06:27:09.264Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ic_correct.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\ic_correct.xml",
+              "RelativeDocumentMoniker": "Resources\\drawable\\ic_correct.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\ic_correct.xml",
+              "RelativeToolTip": "Resources\\drawable\\ic_correct.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T07:27:10.357Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DashboardActivity.cs",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\DashboardActivity.cs",
+              "RelativeDocumentMoniker": "Activities\\DashboardActivity.cs",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\DashboardActivity.cs",
+              "RelativeToolTip": "Activities\\DashboardActivity.cs",
+              "ViewState": "AgIAACIAAAAAAAAAAAAQwDsAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-13T06:18:25.91Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ic_incorrect.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\ic_incorrect.xml",
+              "RelativeDocumentMoniker": "Resources\\drawable\\ic_incorrect.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\ic_incorrect.xml",
+              "RelativeToolTip": "Resources\\drawable\\ic_incorrect.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T07:28:57.849Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "layout_question_result_item.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\layout\\layout_question_result_item.xml",
+              "RelativeDocumentMoniker": "Resources\\layout\\layout_question_result_item.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\layout\\layout_question_result_item.xml",
+              "RelativeToolTip": "Resources\\layout\\layout_question_result_item.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFgAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T07:25:17.295Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "QuizResultActivity.cs",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\QuizResultActivity.cs",
+              "RelativeDocumentMoniker": "Activities\\QuizResultActivity.cs",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\QuizResultActivity.cs",
+              "RelativeToolTip": "Activities\\QuizResultActivity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIwAAABOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-13T07:21:20.509Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TakeQuizActivity.cs",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\TakeQuizActivity.cs",
+              "RelativeDocumentMoniker": "Activities\\TakeQuizActivity.cs",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\TakeQuizActivity.cs",
+              "RelativeToolTip": "Activities\\TakeQuizActivity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-13T07:20:12.617Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "QuizListActivity.cs",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\QuizListActivity.cs",
+              "RelativeDocumentMoniker": "Activities\\QuizListActivity.cs",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\QuizListActivity.cs",
+              "RelativeToolTip": "Activities\\QuizListActivity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-13T09:01:54.525Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "splash_screen.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\splash_screen.xml",
+              "RelativeDocumentMoniker": "Resources\\drawable\\splash_screen.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\splash_screen.xml",
+              "RelativeToolTip": "Resources\\drawable\\splash_screen.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:51:31.278Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "activity_dashboard.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\layout\\activity_dashboard.xml",
+              "RelativeDocumentMoniker": "Resources\\layout\\activity_dashboard.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\layout\\activity_dashboard.xml",
+              "RelativeToolTip": "Resources\\layout\\activity_dashboard.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAkAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T09:02:25.317Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "activity_quiz_result.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\layout\\activity_quiz_result.xml",
+              "RelativeDocumentMoniker": "Resources\\layout\\activity_quiz_result.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\layout\\activity_quiz_result.xml",
+              "RelativeToolTip": "Resources\\layout\\activity_quiz_result.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:49:06.207Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "QuizDetailActivity.cs",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\QuizDetailActivity.cs",
+              "RelativeDocumentMoniker": "Activities\\QuizDetailActivity.cs",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\QuizDetailActivity.cs",
+              "RelativeToolTip": "Activities\\QuizDetailActivity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-13T06:34:41.777Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "MainActivity.cs",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\MainActivity.cs",
+              "RelativeDocumentMoniker": "Activities\\MainActivity.cs",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Activities\\MainActivity.cs",
+              "RelativeToolTip": "Activities\\MainActivity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-13T06:33:16.553Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "AboutResources.txt",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\AboutResources.txt",
+              "RelativeDocumentMoniker": "Resources\\AboutResources.txt",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\AboutResources.txt",
+              "RelativeToolTip": "Resources\\AboutResources.txt",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-03-13T06:30:17.352Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "gradient_background.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\gradient_background.xml",
+              "RelativeDocumentMoniker": "Resources\\drawable\\gradient_background.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\gradient_background.xml",
+              "RelativeToolTip": "Resources\\drawable\\gradient_background.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:16:41.067Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "edit_text_background.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\edit_text_background.xml",
+              "RelativeDocumentMoniker": "Resources\\drawable\\edit_text_background.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\edit_text_background.xml",
+              "RelativeToolTip": "Resources\\drawable\\edit_text_background.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:16:40.908Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "button_outline_background.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\button_outline_background.xml",
+              "RelativeDocumentMoniker": "Resources\\drawable\\button_outline_background.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\button_outline_background.xml",
+              "RelativeToolTip": "Resources\\drawable\\button_outline_background.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:16:40.708Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "button_background.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\button_background.xml",
+              "RelativeDocumentMoniker": "Resources\\drawable\\button_background.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\drawable\\button_background.xml",
+              "RelativeToolTip": "Resources\\drawable\\button_background.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:14:57.15Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "AndroidManifest.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Properties\\AndroidManifest.xml",
+              "RelativeDocumentMoniker": "Properties\\AndroidManifest.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Properties\\AndroidManifest.xml",
+              "RelativeToolTip": "Properties\\AndroidManifest.xml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:06:37.114Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Properties\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "Properties\\AssemblyInfo.cs",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Properties\\AssemblyInfo.cs",
+              "RelativeToolTip": "Properties\\AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-13T06:06:32.512Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "activity_main.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\layout\\activity_main.xml",
+              "RelativeDocumentMoniker": "Resources\\layout\\activity_main.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\layout\\activity_main.xml",
+              "RelativeToolTip": "Resources\\layout\\activity_main.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:05:49.507Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "strings.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\strings.xml",
+              "RelativeDocumentMoniker": "Resources\\values\\strings.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\strings.xml",
+              "RelativeToolTip": "Resources\\values\\strings.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:06:12.611Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "styles.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\styles.xml",
+              "RelativeDocumentMoniker": "Resources\\values\\styles.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\styles.xml",
+              "RelativeToolTip": "Resources\\values\\styles.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:06:14.19Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "ic_launcher_background.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\ic_launcher_background.xml",
+              "RelativeDocumentMoniker": "Resources\\values\\ic_launcher_background.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\ic_launcher_background.xml",
+              "RelativeToolTip": "Resources\\values\\ic_launcher_background.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:06:10.296Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "colors.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\colors.xml",
+              "RelativeDocumentMoniker": "Resources\\values\\colors.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\colors.xml",
+              "RelativeToolTip": "Resources\\values\\colors.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:06:00.071Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "styles.xml",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\styles.xml",
+              "RelativeDocumentMoniker": "Resources\\values\\styles.xml",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\Resources\\values\\styles.xml",
+              "RelativeToolTip": "Resources\\values\\styles.xml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-03-13T06:05:30.01Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "MainActivity.cs",
+              "DocumentMoniker": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\MainActivity.cs",
+              "RelativeDocumentMoniker": "MainActivity.cs",
+              "ToolTip": "C:\\Users\\eProd\\Git\\QuizApp\\Mobile\\MainActivity.cs",
+              "RelativeToolTip": "MainActivity.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAQwBcAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-12T14:37:14.262Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
