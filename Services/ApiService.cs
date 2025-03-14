@@ -12,7 +12,7 @@ namespace Mobile.Services
     public class ApiService
     {
         private readonly HttpClient _httpClient;
-        private const string BaseUrl = "https://localhost:7055/api/";
+        private const string BaseUrl = "http://192.168.1.15:5063/api/";
         private string _token;
 
         public ApiService()

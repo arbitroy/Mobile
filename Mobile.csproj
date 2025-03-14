@@ -66,7 +66,6 @@
     <Compile Include="Activities\QuizListActivity.cs" />
     <Compile Include="Activities\QuizResultActivity.cs" />
     <Compile Include="Activities\TakeQuizActivity.cs" />
-    <Compile Include="MainActivity.cs" />
     <Compile Include="Models\AuthResponse.cs" />
     <Compile Include="Models\LoginRequest.cs" />
     <Compile Include="Models\Quiz.cs" />
@@ -149,6 +148,9 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\quiz_logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\xml\network_security_config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
