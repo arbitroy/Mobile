@@ -9,31 +9,108 @@ using Newtonsoft.Json;
 using Mobile.Models;
 using Android.Net;
 using Android.Content;
+using Org.Apache.Http.Client;
+using Android.OS;
 
 namespace Mobile.Services
 {
     public class ApiService
     {
         private readonly HttpClient _httpClient;
-        private const string BaseUrl = "http://192.168.1.15:5063/api/"; // This should be changed to your actual API URL
-        private string _token;
         private readonly Context _context;
+
+        // Special IP address for Android Emulator
+        private const string EmulatorBaseUrl = "http://10.0.2.2:5063/api/";
+
+        // Your computer's actual local network IP address
+        // This should match what you see in your ipconfig output for the WiFi adapter
+        private const string PhysicalDeviceBaseUrl = "http://192.168.1.15:5063/api/";
+
+        private string _token;
 
         public ApiService(Context context = null)
         {
             _context = context;
             var handler = new HttpClientHandler
             {
-                // Allow self-signed certificates if needed
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
             };
 
             _httpClient = new HttpClient(handler);
-            _httpClient.BaseAddress = new System.Uri(BaseUrl);
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            // Set reasonable timeouts
+            // Choose the right base URL based on whether we're running in an emulator
+            string baseUrl = IsRunningOnEmulator() ? EmulatorBaseUrl : PhysicalDeviceBaseUrl;
+
+            _httpClient.BaseAddress = new System.Uri(baseUrl);
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _httpClient.Timeout = TimeSpan.FromSeconds(15);
+
+            Console.WriteLine($"API Service initialized with base URL: {baseUrl}");
+        }
+
+        // Helper method to detect if we're running in an emulator
+        private bool IsRunningOnEmulator()
+        {
+            // Method 1: Check manufacturer and model
+            string manufacturer = Build.Manufacturer.ToLowerInvariant();
+            string model = Build.Model.ToLowerInvariant();
+
+            if (manufacturer == "google" && model.Contains("sdk"))
+                return true;
+
+            // Method 2: Check product name
+            string product = Build.Product.ToLowerInvariant();
+            if (product.Contains("sdk") || product.Contains("emulator") || product.Contains("genymotion"))
+                return true;
+
+            // Method 3: Check fingerprint
+            string fingerprint = Build.Fingerprint.ToLowerInvariant();
+            if (fingerprint.Contains("generic") || fingerprint.Contains("vbox") || fingerprint.Contains("test-keys"))
+                return true;
+
+            return false;
+        }
+
+        public async Task<AuthResponse> LoginAsync(string email, string password)
+        {
+            Console.WriteLine($"Attempting login for {email} to {_httpClient.BaseAddress}auth/login");
+
+            var loginData = new LoginRequest { Email = email, Password = password };
+            var json = JsonConvert.SerializeObject(loginData);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
+            {
+                try
+                {
+                    Console.WriteLine("Sending login request...");
+                    var response = await _httpClient.PostAsync("auth/login", content, cts.Token);
+                    Console.WriteLine($"Received response: {response.StatusCode}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseJson = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine("Response content received successfully");
+                        var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseJson);
+                        SetAuthToken(authResponse.Token);
+                        return authResponse;
+                    }
+
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error response: {errorContent}");
+                    throw new Exception($"Login failed: {response.StatusCode} - {response.ReasonPhrase}");
+                }
+                catch (TaskCanceledException)
+                {
+                    Console.WriteLine("Login request timed out");
+                    throw new Exception($"Login request timed out. Please verify your network connection and that the API server is running at {_httpClient.BaseAddress}.");
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"Network error: {ex.Message}");
+                    throw new Exception($"Network error: {ex.Message}. Make sure the API server is running and accessible at {_httpClient.BaseAddress}");
+                }
+            }
         }
 
         public void SetAuthToken(string token)
@@ -42,44 +119,7 @@ namespace Mobile.Services
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        public async Task<AuthResponse> LoginAsync(string email, string password)
-        {
-            if (!IsNetworkAvailable())
-            {
-                throw new Exception("No internet connection available. Please check your network settings.");
-            }
 
-            var loginData = new LoginRequest { Email = email, Password = password };
-            var json = JsonConvert.SerializeObject(loginData);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            // Create a cancellation token that will timeout after 15 seconds
-            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
-            {
-                try
-                {
-                    var response = await _httpClient.PostAsync("auth/login", content, cts.Token);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseJson = await response.Content.ReadAsStringAsync();
-                        var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseJson);
-                        SetAuthToken(authResponse.Token);
-                        return authResponse;
-                    }
-
-                    throw new Exception($"Login failed: {response.StatusCode} - {response.ReasonPhrase}");
-                }
-                catch (TaskCanceledException)
-                {
-                    throw new Exception("Login request timed out. Please try again or check your connection.");
-                }
-                catch (HttpRequestException ex)
-                {
-                    throw new Exception($"Network error: {ex.Message}");
-                }
-            }
-        }
 
         public async Task<List<Quiz>> GetQuizzesAsync()
         {
