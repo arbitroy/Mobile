@@ -41,9 +41,9 @@ namespace Mobile.Activities
             _questionCountTextView = FindViewById<TextView>(Resource.Id.questionCountTextView);
             _startQuizButton = FindViewById<Button>(Resource.Id.startQuizButton);
 
-            // Initialize service
-            _apiService = new ApiService();
-            
+            // Initialize service with context to access shared preferences
+            _apiService = new ApiService(this);
+
             // Load quiz details
             LoadQuizDetailAsync();
 
@@ -57,10 +57,10 @@ namespace Mobile.Activities
             {
                 // Show loading indicator
                 FindViewById<ProgressBar>(Resource.Id.loadingProgressBar).Visibility = Android.Views.ViewStates.Visible;
-                
+
                 // Get quiz detail from API
                 _quizDetail = await _apiService.GetQuizDetailAsync(_quizId);
-                
+
                 // Update UI with quiz details
                 _titleTextView.Text = _quizDetail.Title;
                 _descriptionTextView.Text = _quizDetail.Description;
@@ -70,6 +70,7 @@ namespace Mobile.Activities
             catch (Exception ex)
             {
                 Toast.MakeText(this, $"Failed to load quiz details: {ex.Message}", ToastLength.Long).Show();
+                Finish(); // Return to previous activity on error
             }
             finally
             {
@@ -80,9 +81,11 @@ namespace Mobile.Activities
 
         private void OnStartQuizButtonClick(object sender, EventArgs e)
         {
-            // In a complete implementation, this would navigate to a quiz-taking activity
-            // For now, we'll just show a toast message
-            Toast.MakeText(this, "Quiz taking functionality not implemented yet", ToastLength.Short).Show();
+            // Navigate to quiz-taking activity
+            var intent = new Android.Content.Intent(this, typeof(TakeQuizActivity));
+            intent.PutExtra("QuizId", _quizId);
+            intent.PutExtra("QuizTitle", _quizDetail.Title);
+            StartActivity(intent);
         }
     }
 }

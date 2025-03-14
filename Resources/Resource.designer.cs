@@ -9276,6 +9276,13 @@ namespace Mobile
 			// aapt resource value: 2
 			public const int ViewBackgroundHelper_backgroundTintMode = 2;
 			
+			// aapt resource value: { 0x10100C4 }
+			public static int[] ViewPager2 = new int[] {
+					16842948};
+			
+			// aapt resource value: 0
+			public const int ViewPager2_android_orientation = 0;
+			
 			// aapt resource value: { 0x10100D0,0x10100F2,0x10100F3 }
 			public static int[] ViewStubCompat = new int[] {
 					16842960,

@@ -22,6 +22,8 @@ namespace Mobile.Activities
         private RecyclerView _recentAttemptsRecyclerView;
         private Button _browseQuizzesButton;
         private ApiService _apiService;
+        private ProgressBar _loadingProgressBar;
+        private TextView _emptyAttemptsTextView;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -37,13 +39,19 @@ namespace Mobile.Activities
             _bestScoreTextView = FindViewById<TextView>(Resource.Id.bestScoreTextView);
             _recentAttemptsRecyclerView = FindViewById<RecyclerView>(Resource.Id.recentAttemptsRecyclerView);
             _browseQuizzesButton = FindViewById<Button>(Resource.Id.browseQuizzesButton);
+            _loadingProgressBar = FindViewById<ProgressBar>(Resource.Id.loadingProgressBar);
+            _emptyAttemptsTextView = FindViewById<TextView>(Resource.Id.emptyAttemptsTextView);
 
             // Set up RecyclerView
             _recentAttemptsRecyclerView.SetLayoutManager(new LinearLayoutManager(this));
 
-            // Initialize service
-            _apiService = new ApiService();
-            
+            // Initialize service with context to access token
+            _apiService = new ApiService(this);
+
+            // Set username from preferences if available
+            string username = TokenManager.GetUsername(this) ?? Intent.GetStringExtra("UserName") ?? "Quiz App User";
+            _userNameTextView.Text = username;
+
             // Load user stats
             LoadUserStatsAsync();
 
@@ -56,40 +64,59 @@ namespace Mobile.Activities
             try
             {
                 // Show loading indicator
-                FindViewById<ProgressBar>(Resource.Id.loadingProgressBar).Visibility = Android.Views.ViewStates.Visible;
-                
+                _loadingProgressBar.Visibility = ViewStates.Visible;
+
                 // Get user stats from API
                 var userStats = await _apiService.GetUserStatsAsync();
-                
+
                 // Update UI with user stats
-                _userNameTextView.Text = Intent.GetStringExtra("UserName") ?? "Quiz App User";
                 _quizzesTakenTextView.Text = userStats.TotalQuizzesTaken.ToString();
                 _averageScoreTextView.Text = $"{userStats.AverageScore:F1}%";
                 _bestScoreTextView.Text = $"{userStats.BestScore:F0}%";
-                
+
                 // Set up recent attempts RecyclerView
                 if (userStats.RecentAttempts.Count > 0)
                 {
                     var adapter = new RecentAttemptsAdapter(this, userStats.RecentAttempts);
                     _recentAttemptsRecyclerView.SetAdapter(adapter);
-                    
+
                     // Hide empty message
-                    FindViewById<TextView>(Resource.Id.emptyAttemptsTextView).Visibility = Android.Views.ViewStates.Gone;
+                    _emptyAttemptsTextView.Visibility = ViewStates.Gone;
                 }
                 else
                 {
                     // Show empty message
-                    FindViewById<TextView>(Resource.Id.emptyAttemptsTextView).Visibility = Android.Views.ViewStates.Visible;
+                    _emptyAttemptsTextView.Visibility = ViewStates.Visible;
                 }
             }
             catch (Exception ex)
             {
-                Toast.MakeText(this, $"Failed to load user stats: {ex.Message}", ToastLength.Long).Show();
+                // Check if this is an authentication error
+                if (ex.Message.Contains("must be logged in") || ex.Message.Contains("Unauthorized"))
+                {
+                    // Clear invalid token and redirect to login
+                    TokenManager.ClearToken(this);
+                    Toast.MakeText(this, "Your session has expired. Please log in again.", ToastLength.Long).Show();
+
+                    var intent = new Intent(this, typeof(MainActivity));
+                    StartActivity(intent);
+                    Finish();
+                    return;
+                }
+
+                // For other errors, just show a message but stay on the page
+                Toast.MakeText(this, $"Error loading stats: {ex.Message}", ToastLength.Long).Show();
+
+                // Initialize with empty values
+                _quizzesTakenTextView.Text = "0";
+                _averageScoreTextView.Text = "0%";
+                _bestScoreTextView.Text = "0%";
+                _emptyAttemptsTextView.Visibility = ViewStates.Visible;
             }
             finally
             {
                 // Hide loading indicator
-                FindViewById<ProgressBar>(Resource.Id.loadingProgressBar).Visibility = Android.Views.ViewStates.Gone;
+                _loadingProgressBar.Visibility = ViewStates.Gone;
             }
         }
 
@@ -122,16 +149,16 @@ namespace Mobile.Activities
             {
                 AttemptViewHolder viewHolder = holder as AttemptViewHolder;
                 QuizAttemptSummary attempt = _attempts[position];
-                
+
                 // Set quiz title
                 viewHolder.QuizTitleTextView.Text = attempt.QuizTitle;
-                
+
                 // Set date
                 viewHolder.DateTextView.Text = attempt.EndTime.ToString("MMM dd, yyyy HH:mm");
-                
+
                 // Set score
                 viewHolder.ScoreTextView.Text = $"{attempt.Score}%";
-                
+
                 // Set score color based on value
                 if (attempt.Score >= 80)
                 {
@@ -145,7 +172,7 @@ namespace Mobile.Activities
                 {
                     viewHolder.ScoreTextView.SetTextColor(Android.Graphics.Color.ParseColor("#F44336")); // Red
                 }
-                
+
                 // Set up event handler for item click
                 viewHolder.ItemView.Click += (sender, e) => {
                     // Navigate to quiz result activity

@@ -21,7 +21,7 @@ namespace Mobile.Activities
         private TextView _timeTextView;
         private RecyclerView _questionsRecyclerView;
         private Button _doneButton;
-        
+
         private ApiService _apiService;
         private int _attemptId;
         private QuizResult _quizResult;
@@ -46,9 +46,9 @@ namespace Mobile.Activities
             // Set up RecyclerView
             _questionsRecyclerView.SetLayoutManager(new LinearLayoutManager(this));
 
-            // Initialize service
-            _apiService = new ApiService();
-            
+            // Initialize service with context to access token
+            _apiService = new ApiService(this);
+
             // Load quiz result
             LoadQuizResultAsync();
 
@@ -60,40 +60,69 @@ namespace Mobile.Activities
         {
             try
             {
-                // Show loading indicator
-                FindViewById<ProgressBar>(Resource.Id.loadingProgressBar).Visibility = ViewStates.Visible;
-                
+                // Show loading indicator (if you have one)
+                var progressBar = FindViewById<ProgressBar>(Resource.Id.loadingProgressBar);
+                if (progressBar != null)
+                {
+                    progressBar.Visibility = ViewStates.Visible;
+                }
+
                 // Get quiz result from API
                 _quizResult = await _apiService.GetQuizResultAsync(_attemptId);
-                
+
                 // Update UI with quiz result
                 _quizTitleTextView.Text = _quizResult.QuizTitle;
                 _scoreTextView.Text = $"{_quizResult.Score}%";
-                
+
                 // Calculate time taken
-                TimeSpan timeTaken = _quizResult.EndTime.Value - _quizResult.StartTime;
-                _timeTextView.Text = $"{(int)timeTaken.TotalMinutes}:{timeTaken.Seconds:D2}";
-                
+                if (_quizResult.EndTime.HasValue)
+                {
+                    TimeSpan timeTaken = _quizResult.EndTime.Value - _quizResult.StartTime;
+                    _timeTextView.Text = $"{(int)timeTaken.TotalMinutes}:{timeTaken.Seconds:D2}";
+                }
+                else
+                {
+                    _timeTextView.Text = "N/A";
+                }
+
                 // Set up questions RecyclerView
                 var adapter = new QuestionResultAdapter(this, _quizResult.Questions);
                 _questionsRecyclerView.SetAdapter(adapter);
             }
             catch (Exception ex)
             {
+                // Check if this is an authentication error
+                if (ex.Message.Contains("must be logged in") || ex.Message.Contains("Unauthorized"))
+                {
+                    // Clear invalid token and redirect to login
+                    TokenManager.ClearToken(this);
+                    Toast.MakeText(this, "Your session has expired. Please log in again.", ToastLength.Long).Show();
+
+                    var intent = new Intent(this, typeof(MainActivity));
+                    intent.SetFlags(ActivityFlags.ClearTask | ActivityFlags.NewTask);
+                    StartActivity(intent);
+                    Finish();
+                    return;
+                }
+
                 Toast.MakeText(this, $"Failed to load quiz result: {ex.Message}", ToastLength.Long).Show();
                 Finish(); // Close activity
             }
             finally
             {
-                // Hide loading indicator
-                FindViewById<ProgressBar>(Resource.Id.loadingProgressBar).Visibility = ViewStates.Gone;
+                // Hide loading indicator (if you have one)
+                var progressBar = FindViewById<ProgressBar>(Resource.Id.loadingProgressBar);
+                if (progressBar != null)
+                {
+                    progressBar.Visibility = ViewStates.Gone;
+                }
             }
         }
 
         private void OnDoneButtonClick(object sender, EventArgs e)
         {
             // Navigate back to quiz list
-            var intent = new Intent(this, typeof(QuizListActivity));
+            var intent = new Intent(this, typeof(DashboardActivity));
             intent.SetFlags(ActivityFlags.ClearTop); // Clear back stack
             StartActivity(intent);
             Finish();
@@ -122,14 +151,14 @@ namespace Mobile.Activities
         {
             QuestionResultViewHolder viewHolder = holder as QuestionResultViewHolder;
             QuestionResult question = _questions[position];
-            
+
             // Set question text and number
             viewHolder.QuestionNumberTextView.Text = $"Question {position + 1}";
             viewHolder.QuestionTextView.Text = question.QuestionText;
-            
+
             // Set selected option
             viewHolder.SelectedOptionTextView.Text = question.SelectedOptionText;
-            
+
             // Set status (correct/incorrect)
             if (question.IsCorrect)
             {
@@ -140,7 +169,7 @@ namespace Mobile.Activities
             {
                 viewHolder.StatusImageView.SetImageResource(Resource.Drawable.ic_incorrect);
                 viewHolder.SelectedOptionTextView.SetTextColor(Color.ParseColor("#F44336")); // Red
-                
+
                 // Show correct answer
                 viewHolder.CorrectOptionLayout.Visibility = ViewStates.Visible;
                 viewHolder.CorrectOptionTextView.Text = question.CorrectOptionText;

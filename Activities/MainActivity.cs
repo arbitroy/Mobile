@@ -3,6 +3,7 @@ using Android.OS;
 using Android.Widget;
 using System;
 using Mobile.Services;
+using Android.Content;
 
 namespace Mobile.Activities
 {
@@ -26,8 +27,17 @@ namespace Mobile.Activities
             _passwordEditText = FindViewById<EditText>(Resource.Id.passwordEditText);
             _loginButton = FindViewById<Button>(Resource.Id.loginButton);
 
-            // Initialize service
-            _apiService = new ApiService();
+            // Initialize service with context
+            _apiService = new ApiService(this);
+
+            // Check if token exists and skip login if it does
+            string token = TokenManager.GetToken(this);
+            if (!string.IsNullOrEmpty(token))
+            {
+                Toast.MakeText(this, "Welcome back!", ToastLength.Short).Show();
+                NavigateToDashboard();
+                return;
+            }
 
             // Set up event handlers
             _loginButton.Click += OnLoginButtonClick;
@@ -49,9 +59,6 @@ namespace Mobile.Activities
                 _loginButton.Enabled = false;
                 _loginButton.Text = "Logging in...";
 
-                // Initialize API service with context
-                _apiService = new ApiService(this);
-
                 // Create a progress dialog
                 var progressDialog = new Android.App.ProgressDialog(this);
                 progressDialog.SetMessage("Logging in...");
@@ -65,10 +72,8 @@ namespace Mobile.Activities
                     progressDialog.Dismiss();
                     Toast.MakeText(this, $"Welcome {authResponse.User.UserName}!", ToastLength.Short).Show();
 
-                    // Navigate to quiz list activity
-                    var intent = new Android.Content.Intent(this, typeof(QuizListActivity));
-                    StartActivity(intent);
-                    Finish(); // Close login activity
+                    // Navigate to dashboard
+                    NavigateToDashboard();
                 }
                 finally
                 {
@@ -89,6 +94,29 @@ namespace Mobile.Activities
                 _loginButton.Enabled = true;
                 _loginButton.Text = "Login";
             }
+        }
+
+        private void NavigateToDashboard()
+        {
+            // Check if a username is saved
+            string username = TokenManager.GetUsername(this);
+
+            // Navigate to dashboard or quiz list
+            Intent intent;
+            if (!string.IsNullOrEmpty(username))
+            {
+                // Go to dashboard if we have user info
+                intent = new Intent(this, typeof(DashboardActivity));
+                intent.PutExtra("UserName", username);
+            }
+            else
+            {
+                // Otherwise just go to quiz list
+                intent = new Intent(this, typeof(QuizListActivity));
+            }
+
+            StartActivity(intent);
+            Finish(); // Close login activity
         }
     }
 }

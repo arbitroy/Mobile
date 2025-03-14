@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="#f5f8ff">
 
-    <LinearLayout
+	<LinearLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,7 +14,7 @@
         android:padding="16dp"
         android:background="#FFFFFF">
 
-        <TextView
+		<TextView
             android:id="@+id/quizTitleTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -22,44 +22,44 @@
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
-        <LinearLayout
+		<LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <TextView
+			<TextView
                 android:id="@+id/questionCounterTextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textSize="16sp" />
 
-            <TextView
+			<TextView
                 android:id="@+id/timerTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 android:textColor="#f44336"
                 android:textStyle="bold" />
-        </LinearLayout>
+		</LinearLayout>
 
-        <ProgressBar
+		<ProgressBar
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="8dp"
             android:layout_marginTop="8dp"
             android:progressTint="#4361ee" />
-    </LinearLayout>
+	</LinearLayout>
 
-    <androidx.viewpager2.widget.ViewPager2
+	<androidx.viewpager2.widget.ViewPager2
         android:id="@+id/questionViewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerLayout"
         android:layout_above="@id/navigationLayout" />
 
-    <LinearLayout
+	<LinearLayout
         android:id="@+id/navigationLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -68,7 +68,7 @@
         android:background="#FFFFFF"
         android:layout_alignParentBottom="true">
 
-        <Button
+		<Button
             android:id="@+id/previousButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -78,7 +78,7 @@
             android:layout_marginRight="8dp"
             android:background="@drawable/button_outline_background" />
 
-        <Button
+		<Button
             android:id="@+id/nextButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -87,5 +87,5 @@
             android:textColor="#FFFFFF"
             android:layout_marginLeft="8dp"
             android:background="@drawable/button_background" />
-    </LinearLayout>
+	</LinearLayout>
 </RelativeLayout>

@@ -1,7 +1,6 @@
 using Android.App;
 using Android.OS;
 using Android.Widget;
-using Android.Support.V4.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +10,8 @@ using Mobile.Services;
 using Android.Content;
 using Android.Views;
 using Android.Graphics;
+using AndroidX.ViewPager2.Widget;
+using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager.Widget;
 
 namespace Mobile.Activities
@@ -22,7 +23,7 @@ namespace Mobile.Activities
         private TextView _questionCounterTextView;
         private TextView _timerTextView;
         private ProgressBar _progressBar;
-        private ViewPager _questionViewPager;
+        private ViewPager2 _questionViewPager;
         private Button _previousButton;
         private Button _nextButton;
 
@@ -53,15 +54,15 @@ namespace Mobile.Activities
             _questionCounterTextView = FindViewById<TextView>(Resource.Id.questionCounterTextView);
             _timerTextView = FindViewById<TextView>(Resource.Id.timerTextView);
             _progressBar = FindViewById<ProgressBar>(Resource.Id.progressBar);
-            _questionViewPager = FindViewById<ViewPager>(Resource.Id.questionViewPager);
+            _questionViewPager = FindViewById<ViewPager2>(Resource.Id.questionViewPager);
             _previousButton = FindViewById<Button>(Resource.Id.previousButton);
             _nextButton = FindViewById<Button>(Resource.Id.nextButton);
 
             // Set quiz title
             _quizTitleTextView.Text = _quizTitle;
 
-            // Initialize service
-            _apiService = new ApiService();
+            // Initialize service with context to access token
+            _apiService = new ApiService(this);
 
             // Load quiz details
             LoadQuizDetailAsync();
@@ -70,18 +71,35 @@ namespace Mobile.Activities
             _previousButton.Click += OnPreviousButtonClick;
             _nextButton.Click += OnNextButtonClick;
 
-            // Set up ViewPager page change listener
-            _questionViewPager.PageSelected += (sender, e) => {
-                UpdateQuestionCounter(e.Position);
-                UpdateNavigationButtons(e.Position);
-                _progressBar.Progress = e.Position + 1;
-            };
+            // Set up ViewPager page change callback
+            _questionViewPager.RegisterOnPageChangeCallback(new PageChangeCallback(this));
+        }
+
+        // Page change callback class
+        private class PageChangeCallback : ViewPager2.OnPageChangeCallback
+        {
+            private readonly TakeQuizActivity _activity;
+
+            public PageChangeCallback(TakeQuizActivity activity)
+            {
+                _activity = activity;
+            }
+
+            public override void OnPageSelected(int position)
+            {
+                base.OnPageSelected(position);
+                _activity.UpdateQuestionCounter(position);
+                _activity.UpdateNavigationButtons(position);
+                _activity._progressBar.Progress = position + 1;
+            }
         }
 
         private async void LoadQuizDetailAsync()
         {
             try
             {
+                // Show loading overlay or disable UI
+
                 // Get quiz detail from API
                 _quizDetail = await _apiService.GetQuizDetailAsync(_quizId);
 
@@ -113,6 +131,20 @@ namespace Mobile.Activities
             }
             catch (Exception ex)
             {
+                // Check if this is an authentication error
+                if (ex.Message.Contains("must be logged in") || ex.Message.Contains("Unauthorized"))
+                {
+                    // Clear invalid token and redirect to login
+                    TokenManager.ClearToken(this);
+                    Toast.MakeText(this, "Your session has expired. Please log in again.", ToastLength.Long).Show();
+
+                    var intent = new Intent(this, typeof(MainActivity));
+                    intent.SetFlags(ActivityFlags.ClearTask | ActivityFlags.NewTask);
+                    StartActivity(intent);
+                    Finish();
+                    return;
+                }
+
                 Toast.MakeText(this, $"Failed to load quiz: {ex.Message}", ToastLength.Long).Show();
                 Finish(); // Close activity
             }
@@ -238,24 +270,97 @@ namespace Mobile.Activities
                 // Stop timer
                 _timer?.Stop();
 
-                // Create submission object
-                var submission = new QuizSubmission
+                // Show progress dialog
+                var progressDialog = new ProgressDialog(this);
+                progressDialog.SetMessage("Submitting your answers...");
+                progressDialog.SetCancelable(false);
+                progressDialog.Show();
+
+                try
                 {
-                    QuizId = _quizId,
-                    Answers = _answers.Where(a => a.Value != -1).ToDictionary(a => a.Key, a => a.Value)
-                };
+                    // Check if we have answers to submit
+                    if (_answers.Count(a => a.Value != -1) == 0)
+                    {
+                        // No answers selected at all
+                        Toast.MakeText(this, "Please select at least one answer before submitting", ToastLength.Long).Show();
+                        return;
+                    }
 
-                // Submit to API
-                var result = await _apiService.SubmitQuizAsync(submission);
+                    // Filter out unanswered questions (-1 values)
+                    Dictionary<int, int> answersToSubmit = new Dictionary<int, int>();
+                    foreach (var pair in _answers)
+                    {
+                        if (pair.Value != -1)
+                        {
+                            answersToSubmit.Add(pair.Key, pair.Value);
+                        }
+                    }
 
-                // Navigate to result activity
-                var intent = new Intent(this, typeof(QuizResultActivity));
-                intent.PutExtra("AttemptId", result.AttemptId);
+                    // Create submission object
+                    var submission = new QuizSubmission
+                    {
+                        QuizId = _quizId,
+                        Answers = answersToSubmit
+                    };
+
+                    // Log for debugging
+                    Console.WriteLine($"Submitting quiz with {answersToSubmit.Count} answers");
+                    foreach (var answer in answersToSubmit)
+                    {
+                        Console.WriteLine($"Question ID: {answer.Key}, Selected Option ID: {answer.Value}");
+                    }
+
+                    // Submit to API
+                    var result = await _apiService.SubmitQuizAsync(submission);
+
+                    // Navigate to result activity
+                    var intent = new Intent(this, typeof(QuizResultActivity));
+                    intent.PutExtra("AttemptId", result.AttemptId);
+                    StartActivity(intent);
+                    Finish(); // Close quiz activity
+                }
+                finally
+                {
+                    if (progressDialog.IsShowing)
+                    {
+                        progressDialog.Dismiss();
+                    }
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Handle authentication errors specifically
+                TokenManager.ClearToken(this);
+                Toast.MakeText(this, "Your session has expired. Please log in again.", ToastLength.Long).Show();
+
+                var intent = new Intent(this, typeof(MainActivity));
+                intent.SetFlags(ActivityFlags.ClearTask | ActivityFlags.NewTask);
                 StartActivity(intent);
-                Finish(); // Close quiz activity
+                Finish();
             }
             catch (Exception ex)
             {
+                // Check if this message indicates an authentication issue
+                if (ex.Message.Contains("must be logged in") ||
+                    ex.Message.Contains("Unauthorized") ||
+                    ex.Message.Contains("session") ||
+                    ex.Message.Contains("401") ||
+                    ex.Message.Contains("403") ||
+                    ex.Message.Contains("login"))
+                {
+                    // Clear invalid token and redirect to login
+                    TokenManager.ClearToken(this);
+                    Toast.MakeText(this, "Your session has expired. Please log in again.", ToastLength.Long).Show();
+
+                    var intent = new Intent(this, typeof(MainActivity));
+                    intent.SetFlags(ActivityFlags.ClearTask | ActivityFlags.NewTask);
+                    StartActivity(intent);
+                    Finish();
+                    return;
+                }
+
+                // Log the full exception details
+                Console.WriteLine($"Submit Quiz Exception: {ex}");
                 Toast.MakeText(this, $"Failed to submit quiz: {ex.Message}", ToastLength.Long).Show();
             }
         }
@@ -273,8 +378,8 @@ namespace Mobile.Activities
         }
     }
 
-    // ViewPager adapter for questions
-    public class QuestionAdapter : PagerAdapter
+    // RecyclerView adapter for questions in ViewPager2
+    public class QuestionAdapter : RecyclerView.Adapter
     {
         private readonly Activity _activity;
         private readonly List<Question> _questions;
@@ -287,25 +392,24 @@ namespace Mobile.Activities
             _quizActivity = activity as TakeQuizActivity;
         }
 
-        public override int Count => _questions.Count;
+        public override int ItemCount => _questions.Count;
 
-        public override bool IsViewFromObject(View view, Java.Lang.Object @object)
+        public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
-            return view == @object;
+            View itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.layout_question_item, parent, false);
+            return new QuestionViewHolder(itemView);
         }
 
-        public override Java.Lang.Object InstantiateItem(ViewGroup container, int position)
+        public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
-            var inflater = LayoutInflater.From(container.Context);
-            var view = inflater.Inflate(Resource.Layout.layout_question_item, container, false);
-
-            var questionTextView = view.FindViewById<TextView>(Resource.Id.questionTextView);
-            var optionsRadioGroup = view.FindViewById<RadioGroup>(Resource.Id.optionsRadioGroup);
-
+            QuestionViewHolder viewHolder = holder as QuestionViewHolder;
             Question question = _questions[position];
 
             // Set question text
-            questionTextView.Text = question.Text;
+            viewHolder.QuestionTextView.Text = question.Text;
+
+            // Clear previous radio buttons (if recycled)
+            viewHolder.OptionsRadioGroup.RemoveAllViews();
 
             // Add options as radio buttons
             foreach (var option in question.Options)
@@ -328,7 +432,7 @@ namespace Mobile.Activities
                 radioButton.LayoutParameters = layoutParams;
 
                 // Add to radio group
-                optionsRadioGroup.AddView(radioButton);
+                viewHolder.OptionsRadioGroup.AddView(radioButton);
 
                 // Set up event handler for option selection
                 radioButton.CheckedChange += (sender, e) => {
@@ -339,14 +443,19 @@ namespace Mobile.Activities
                     }
                 };
             }
-
-            container.AddView(view);
-            return view;
         }
 
-        public override void DestroyItem(ViewGroup container, int position, Java.Lang.Object @object)
+        // ViewHolder for question items
+        public class QuestionViewHolder : RecyclerView.ViewHolder
         {
-            container.RemoveView(@object as View);
+            public TextView QuestionTextView { get; }
+            public RadioGroup OptionsRadioGroup { get; }
+
+            public QuestionViewHolder(View itemView) : base(itemView)
+            {
+                QuestionTextView = itemView.FindViewById<TextView>(Resource.Id.questionTextView);
+                OptionsRadioGroup = itemView.FindViewById<RadioGroup>(Resource.Id.optionsRadioGroup);
+            }
         }
     }
 }
