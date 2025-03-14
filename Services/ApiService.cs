@@ -73,43 +73,33 @@ namespace Mobile.Services
 
         public async Task<AuthResponse> LoginAsync(string email, string password)
         {
-            Console.WriteLine($"Attempting login for {email} to {_httpClient.BaseAddress}auth/login");
-
-            var loginData = new LoginRequest { Email = email, Password = password };
-            var json = JsonConvert.SerializeObject(loginData);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
+            try
             {
-                try
-                {
-                    Console.WriteLine("Sending login request...");
-                    var response = await _httpClient.PostAsync("auth/login", content, cts.Token);
-                    Console.WriteLine($"Received response: {response.StatusCode}");
+                var loginData = new LoginRequest { Email = email, Password = password };
+                var json = JsonConvert.SerializeObject(loginData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseJson = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine("Response content received successfully");
-                        var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseJson);
-                        SetAuthToken(authResponse.Token);
-                        return authResponse;
-                    }
+                var response = await _httpClient.PostAsync("auth/login", content);
 
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error response: {errorContent}");
-                    throw new Exception($"Login failed: {response.StatusCode} - {response.ReasonPhrase}");
-                }
-                catch (TaskCanceledException)
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Login Response Status: {response.StatusCode}");
+                Console.WriteLine($"Login Response Content: {responseContent}");
+
+                if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Login request timed out");
-                    throw new Exception($"Login request timed out. Please verify your network connection and that the API server is running at {_httpClient.BaseAddress}.");
+                    var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseContent);
+                    SetAuthToken(authResponse.Token);
+                    return authResponse;
                 }
-                catch (HttpRequestException ex)
+                else
                 {
-                    Console.WriteLine($"Network error: {ex.Message}");
-                    throw new Exception($"Network error: {ex.Message}. Make sure the API server is running and accessible at {_httpClient.BaseAddress}");
+                    throw new Exception($"Login failed: {response.StatusCode} - {responseContent}");
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Login Exception: {ex.Message}");
+                throw;
             }
         }
 
@@ -123,17 +113,39 @@ namespace Mobile.Services
 
         public async Task<List<Quiz>> GetQuizzesAsync()
         {
-            EnsureAuthenticated();
-            
-            var response = await _httpClient.GetAsync("quizzes");
-            
-            if (response.IsSuccessStatusCode)
+            // Add detailed logging
+            Console.WriteLine($"Getting Quizzes - Current Token: {_token}");
+            Console.WriteLine($"Base Address: {_httpClient.BaseAddress}");
+
+            // Ensure the Authorization header is set each time
+            if (!string.IsNullOrEmpty(_token))
             {
-                var responseJson = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<Quiz>>(responseJson);
+                _httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", _token);
             }
-            
-            throw new Exception($"Failed to get quizzes: {response.ReasonPhrase}");
+
+            try
+            {
+                var response = await _httpClient.GetAsync("quizzes");
+
+                // Log full response details
+                Console.WriteLine($"Response Status: {response.StatusCode}");
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Response Content: {responseContent}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonConvert.DeserializeObject<List<Quiz>>(responseContent);
+                }
+
+                // More detailed error handling
+                throw new Exception($"Failed to get quizzes: {response.StatusCode} - {responseContent}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetQuizzesAsync Exception: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<QuizDetail> GetQuizDetailAsync(int quizId)
@@ -215,6 +227,8 @@ namespace Mobile.Services
             {
                 throw new Exception("You must be logged in to access this resource");
             }
+            // Optional: Add additional token validation if needed
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
         }
     }
 }
