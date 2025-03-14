@@ -49,17 +49,39 @@ namespace Mobile.Activities
                 _loginButton.Enabled = false;
                 _loginButton.Text = "Logging in...";
 
-                var authResponse = await _apiService.LoginAsync(email, password);
-                
-                Toast.MakeText(this, $"Welcome {authResponse.User.UserName}!", ToastLength.Short).Show();
-                
-                // Navigate to quiz list activity
-                var intent = new Android.Content.Intent(this, typeof(QuizListActivity));
-                StartActivity(intent);
-                Finish(); // Close login activity
+                // Initialize API service with context
+                _apiService = new ApiService(this);
+
+                // Create a progress dialog
+                var progressDialog = new Android.App.ProgressDialog(this);
+                progressDialog.SetMessage("Logging in...");
+                progressDialog.SetCancelable(false);
+                progressDialog.Show();
+
+                try
+                {
+                    var authResponse = await _apiService.LoginAsync(email, password);
+
+                    progressDialog.Dismiss();
+                    Toast.MakeText(this, $"Welcome {authResponse.User.UserName}!", ToastLength.Short).Show();
+
+                    // Navigate to quiz list activity
+                    var intent = new Android.Content.Intent(this, typeof(QuizListActivity));
+                    StartActivity(intent);
+                    Finish(); // Close login activity
+                }
+                finally
+                {
+                    // Ensure dialog is dismissed
+                    if (progressDialog != null && progressDialog.IsShowing)
+                    {
+                        progressDialog.Dismiss();
+                    }
+                }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Login Exception: {ex}");
                 Toast.MakeText(this, $"Login failed: {ex.Message}", ToastLength.Long).Show();
             }
             finally
