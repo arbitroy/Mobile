@@ -307,21 +307,6 @@ namespace Mobile.Services
             }
         }
 
-        public async Task<List<Quiz>> GetQuizzesAsync()
-        {
-            EnsureAuthenticated();
-
-            var response = await _httpClient.GetAsync("quizzes");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseJson = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<Quiz>>(responseJson);
-            }
-
-            throw new Exception($"Failed to get quizzes: {response.ReasonPhrase}");
-        }
-
         public async Task<QuizDetail> GetQuizDetailAsync(int quizId)
         {
             EnsureAuthenticated();
@@ -639,6 +624,259 @@ namespace Mobile.Services
             }
 
             throw new Exception($"Failed to get admin statistics: {response.ReasonPhrase}");
+        }
+
+
+        // Quiz Administration methods
+        public async Task<List<Quiz>> GetQuizzesAsync()
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.GetAsync("quizzes");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<List<Quiz>>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be logged in to access quizzes.");
+            }
+
+            throw new Exception($"Failed to get quizzes: {response.ReasonPhrase}");
+        }
+
+        public async Task<QuizAdmin> GetQuizAdminAsync(int quizId)
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.GetAsync($"admin/quizzes/{quizId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<QuizAdmin>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to access this resource.");
+            }
+
+            throw new Exception($"Failed to get quiz details: {response.ReasonPhrase}");
+        }
+
+        public async Task<QuizAdmin> CreateQuizAsync(QuizAdmin quiz)
+        {
+            EnsureAuthenticated();
+
+            var json = JsonConvert.SerializeObject(quiz);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("admin/quizzes", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<QuizAdmin>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to create quizzes.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to create quiz: {errorContent}");
+        }
+
+        public async Task<QuizAdmin> UpdateQuizAsync(int quizId, QuizAdmin quiz)
+        {
+            EnsureAuthenticated();
+
+            var json = JsonConvert.SerializeObject(quiz);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync($"admin/quizzes/{quizId}", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<QuizAdmin>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to update quizzes.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to update quiz: {errorContent}");
+        }
+
+        public async Task DeleteQuizAsync(int quizId)
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.DeleteAsync($"admin/quizzes/{quizId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to delete quizzes.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to delete quiz: {errorContent}");
+        }
+
+        // User Administration methods
+        public async Task<List<UserProfile>> GetUsersAsync()
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.GetAsync("admin/users");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<List<UserProfile>>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to access user list.");
+            }
+
+            throw new Exception($"Failed to get users: {response.ReasonPhrase}");
+        }
+
+        public async Task<UserProfile> GetUserByIdAsync(string userId)
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.GetAsync($"admin/users/{userId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<UserProfile>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to access user details.");
+            }
+
+            throw new Exception($"Failed to get user details: {response.ReasonPhrase}");
+        }
+
+        public async Task<UserProfile> CreateUserAsync(AdminCreateUserRequest request)
+        {
+            EnsureAuthenticated();
+
+            var json = JsonConvert.SerializeObject(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("admin/users", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<UserProfile>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to create users.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to create user: {errorContent}");
+        }
+
+        public async Task<UserProfile> UpdateUserAsync(string userId, AdminUpdateUserRequest request)
+        {
+            EnsureAuthenticated();
+
+            var json = JsonConvert.SerializeObject(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync($"admin/users/{userId}", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<UserProfile>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to update users.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to update user: {errorContent}");
+        }
+
+        public async Task DeleteUserAsync(string userId)
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.DeleteAsync($"admin/users/{userId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to delete users.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to delete user: {errorContent}");
+        }
+
+        public async Task ResetUserPasswordAsync(AdminResetPasswordRequest request)
+        {
+            EnsureAuthenticated();
+
+            var json = JsonConvert.SerializeObject(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("admin/users/reset-password", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to reset user passwords.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to reset password: {errorContent}");
         }
     }
 }

@@ -60,7 +60,13 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Activities\AdminCreateQuizActivity.cs" />
+    <Compile Include="Activities\AdminCreateUserActivity.cs" />
     <Compile Include="Activities\AdminDashboardActivity.cs" />
+    <Compile Include="Activities\AdminEditQuizActivity.cs" />
+    <Compile Include="Activities\AdminEditUserActivity.cs" />
+    <Compile Include="Activities\AdminQuizListActivity.cs" />
+    <Compile Include="Activities\AdminUserListActivity.cs" />
     <Compile Include="Activities\BaseAuthenticatedActivity.cs" />
     <Compile Include="Activities\DashboardActivity.cs" />
     <Compile Include="Activities\MainActivity.cs" />
@@ -70,6 +76,7 @@
     <Compile Include="Activities\RegisterActivity.cs" />
     <Compile Include="Activities\TakeQuizActivity.cs" />
     <Compile Include="Activities\UserProfileActivity.cs" />
+    <Compile Include="Models\AdminModels.cs" />
     <Compile Include="Models\AdminStats.cs" />
     <Compile Include="Models\AuthResponse.cs" />
     <Compile Include="Models\ErrorResponse.cs" />
@@ -170,6 +177,29 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\activity_admin_dashboard.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\activity_admin_quiz_list.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\layout_admin_quiz_list_item.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\activity_admin_create_quiz.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\activity_admin_create_user.xml" />
+    <AndroidResource Include="Resources\layout\activity_admin_edit_quiz.xml" />
+    <AndroidResource Include="Resources\layout\activity_admin_edit_user.xml" />
+    <AndroidResource Include="Resources\layout\activity_admin_user_list.xml" />
+    <AndroidResource Include="Resources\layout\dialog_add_option.xml" />
+    <AndroidResource Include="Resources\layout\dialog_add_question.xml" />
+    <AndroidResource Include="Resources\layout\dialog_reset_password.xml" />
+    <AndroidResource Include="Resources\layout\item_admin_option.xml" />
+    <AndroidResource Include="Resources\layout\item_admin_question.xml" />
+    <AndroidResource Include="Resources\layout\layout_admin_activity_item.xml" />
+    <AndroidResource Include="Resources\layout\layout_admin_quiz_item.xml" />
+    <AndroidResource Include="Resources\layout\layout_admin_user_list_item.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
