@@ -10,7 +10,7 @@ using Android.Content;
 namespace Mobile.Activities
 {
     [Activity(Label = "My Profile")]
-    public class UserProfileActivity : Activity
+    public class UserProfileActivity : BaseAuthenticatedActivity
     {
         private TextView _emailTextView;
         private EditText _usernameEditText;
@@ -22,9 +22,7 @@ namespace Mobile.Activities
         private Button _logoutButton;
         private TextView _roleInfoTextView;
 
-        private ApiService _apiService;
         private UserProfile _userProfile;
-        private bool _isAdmin = false;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -43,9 +41,6 @@ namespace Mobile.Activities
             _changePasswordButton = FindViewById<Button>(Resource.Id.changePasswordButton);
             _logoutButton = FindViewById<Button>(Resource.Id.logoutButton);
             _roleInfoTextView = FindViewById<TextView>(Resource.Id.roleInfoTextView);
-
-            // Initialize service with context
-            _apiService = new ApiService(this);
 
             // Set up event handlers
             _saveProfileButton.Click += OnSaveProfileButtonClick;
@@ -69,20 +64,19 @@ namespace Mobile.Activities
                 try
                 {
                     // Get user profile from API
-                    _userProfile = await _apiService.GetUserProfileAsync();
+                    _userProfile = await ApiService.GetUserProfileAsync();
 
                     // Update UI with user profile data
                     _emailTextView.Text = _userProfile.Email;
                     _usernameEditText.Text = _userProfile.UserName;
 
-                    // Check if user is admin
-                    _isAdmin = _userProfile.Roles.Contains("Administrator");
-                    _roleInfoTextView.Text = _isAdmin ?
+                    // Update role info text
+                    _roleInfoTextView.Text = IsAdmin ?
                         "Account Type: Administrator" :
                         "Account Type: Standard User";
 
                     // Make the role text more visible for admins
-                    if (_isAdmin)
+                    if (IsAdmin)
                     {
                         _roleInfoTextView.SetTextColor(Android.Graphics.Color.ParseColor("#4361ee"));
                         _roleInfoTextView.SetTypeface(null, Android.Graphics.TypefaceStyle.Bold);
@@ -140,7 +134,7 @@ namespace Mobile.Activities
                     };
 
                     // Update profile via API
-                    var updatedProfile = await _apiService.UpdateUserProfileAsync(updateRequest);
+                    var updatedProfile = await ApiService.UpdateUserProfileAsync(updateRequest);
 
                     // Update local user profile data
                     _userProfile = updatedProfile;
@@ -221,7 +215,7 @@ namespace Mobile.Activities
                     };
 
                     // Change password via API
-                    await _apiService.ChangePasswordAsync(passwordChangeRequest);
+                    await ApiService.ChangePasswordAsync(passwordChangeRequest);
 
                     // Clear password fields
                     _currentPasswordEditText.Text = string.Empty;
@@ -270,12 +264,20 @@ namespace Mobile.Activities
             alertDialog.Show();
         }
 
-        private void RedirectToLogin()
+        protected override void OnRolesLoaded()
         {
-            var intent = new Intent(this, typeof(MainActivity));
-            intent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.ClearTask | ActivityFlags.NewTask);
-            StartActivity(intent);
-            Finish();
+            // Update role info in UI when roles are loaded or changed
+            RunOnUiThread(() => {
+                _roleInfoTextView.Text = IsAdmin ?
+                    "Account Type: Administrator" :
+                    "Account Type: Standard User";
+
+                if (IsAdmin)
+                {
+                    _roleInfoTextView.SetTextColor(Android.Graphics.Color.ParseColor("#4361ee"));
+                    _roleInfoTextView.SetTypeface(null, Android.Graphics.TypefaceStyle.Bold);
+                }
+            });
         }
 
         private bool IsValidPassword(string password)
@@ -285,19 +287,19 @@ namespace Mobile.Activities
                 return false;
 
             // Check for uppercase letter
-            if (!Regex.IsMatch(password, @"[A-Z]"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(password, @"[A-Z]"))
                 return false;
 
             // Check for lowercase letter
-            if (!Regex.IsMatch(password, @"[a-z]"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(password, @"[a-z]"))
                 return false;
 
             // Check for digit
-            if (!Regex.IsMatch(password, @"[0-9]"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(password, @"[0-9]"))
                 return false;
 
             // Check for special character
-            if (!Regex.IsMatch(password, @"[^a-zA-Z0-9]"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(password, @"[^a-zA-Z0-9]"))
                 return false;
 
             return true;

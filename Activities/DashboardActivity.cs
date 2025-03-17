@@ -13,7 +13,7 @@ using Android.Views;
 namespace Mobile.Activities
 {
     [Activity(Label = "Dashboard")]
-    public class DashboardActivity : Activity
+    public class DashboardActivity : BaseAuthenticatedActivity
     {
         private TextView _userNameTextView;
         private TextView _quizzesTakenTextView;
@@ -22,7 +22,7 @@ namespace Mobile.Activities
         private RecyclerView _recentAttemptsRecyclerView;
         private Button _browseQuizzesButton;
         private Button _profileButton;
-        private ApiService _apiService;
+        private Button _adminDashboardButton;
         private ProgressBar _loadingProgressBar;
         private TextView _emptyAttemptsTextView;
 
@@ -41,14 +41,12 @@ namespace Mobile.Activities
             _recentAttemptsRecyclerView = FindViewById<RecyclerView>(Resource.Id.recentAttemptsRecyclerView);
             _browseQuizzesButton = FindViewById<Button>(Resource.Id.browseQuizzesButton);
             _profileButton = FindViewById<Button>(Resource.Id.profileButton);
+            _adminDashboardButton = FindViewById<Button>(Resource.Id.adminDashboardButton);
             _loadingProgressBar = FindViewById<ProgressBar>(Resource.Id.loadingProgressBar);
             _emptyAttemptsTextView = FindViewById<TextView>(Resource.Id.emptyAttemptsTextView);
 
             // Set up RecyclerView
             _recentAttemptsRecyclerView.SetLayoutManager(new LinearLayoutManager(this));
-
-            // Initialize service with context to access token
-            _apiService = new ApiService(this);
 
             // Set username from preferences if available
             string username = TokenManager.GetUsername(this) ?? Intent.GetStringExtra("UserName") ?? "Quiz App User";
@@ -59,6 +57,18 @@ namespace Mobile.Activities
 
             // Set up event handlers
             _browseQuizzesButton.Click += OnBrowseQuizzesButtonClick;
+            _profileButton.Click += OnProfileButtonClick;
+            _adminDashboardButton.Click += OnAdminDashboardButtonClick;
+        }
+
+        protected override void OnRolesLoaded()
+        {
+            RunOnUiThread(() => {
+                // Show/hide admin dashboard button based on role
+                _adminDashboardButton.Visibility = IsAdmin ?
+                    Android.Views.ViewStates.Visible :
+                    Android.Views.ViewStates.Gone;
+            });
         }
 
         private async void LoadUserStatsAsync()
@@ -68,44 +78,44 @@ namespace Mobile.Activities
                 // Show loading indicator
                 _loadingProgressBar.Visibility = ViewStates.Visible;
 
-                // Get user stats from API
-                var userStats = await _apiService.GetUserStatsAsync();
-
-                // Update UI with user stats
-                _quizzesTakenTextView.Text = userStats.TotalQuizzesTaken.ToString();
-                _averageScoreTextView.Text = $"{userStats.AverageScore:F1}%";
-                _bestScoreTextView.Text = $"{userStats.BestScore:F0}%";
-
-                // Set up recent attempts RecyclerView
-                if (userStats.RecentAttempts.Count > 0)
+                try
                 {
-                    var adapter = new RecentAttemptsAdapter(this, userStats.RecentAttempts);
-                    _recentAttemptsRecyclerView.SetAdapter(adapter);
+                    // Get user stats from API
+                    var userStats = await ApiService.GetUserStatsAsync();
 
-                    // Hide empty message
-                    _emptyAttemptsTextView.Visibility = ViewStates.Gone;
+                    // Update UI with user stats
+                    _quizzesTakenTextView.Text = userStats.TotalQuizzesTaken.ToString();
+                    _averageScoreTextView.Text = $"{userStats.AverageScore:F1}%";
+                    _bestScoreTextView.Text = $"{userStats.BestScore:F0}%";
+
+                    // Set up recent attempts RecyclerView
+                    if (userStats.RecentAttempts.Count > 0)
+                    {
+                        var adapter = new RecentAttemptsAdapter(this, userStats.RecentAttempts);
+                        _recentAttemptsRecyclerView.SetAdapter(adapter);
+
+                        // Hide empty message
+                        _emptyAttemptsTextView.Visibility = ViewStates.Gone;
+                    }
+                    else
+                    {
+                        // Show empty message
+                        _emptyAttemptsTextView.Visibility = ViewStates.Visible;
+                    }
                 }
-                else
+                finally
                 {
-                    // Show empty message
-                    _emptyAttemptsTextView.Visibility = ViewStates.Visible;
+                    // Hide loading indicator
+                    _loadingProgressBar.Visibility = ViewStates.Gone;
                 }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Handle authentication errors - BaseAuthenticatedActivity will handle this
+                Toast.MakeText(this, "Your session has expired. Please log in again.", ToastLength.Long).Show();
             }
             catch (Exception ex)
             {
-                // Check if this is an authentication error
-                if (ex.Message.Contains("must be logged in") || ex.Message.Contains("Unauthorized"))
-                {
-                    // Clear invalid token and redirect to login
-                    TokenManager.ClearToken(this);
-                    Toast.MakeText(this, "Your session has expired. Please log in again.", ToastLength.Long).Show();
-
-                    var intent = new Intent(this, typeof(MainActivity));
-                    StartActivity(intent);
-                    Finish();
-                    return;
-                }
-
                 // For other errors, just show a message but stay on the page
                 Toast.MakeText(this, $"Error loading stats: {ex.Message}", ToastLength.Long).Show();
 
@@ -115,17 +125,26 @@ namespace Mobile.Activities
                 _bestScoreTextView.Text = "0%";
                 _emptyAttemptsTextView.Visibility = ViewStates.Visible;
             }
-            finally
-            {
-                // Hide loading indicator
-                _loadingProgressBar.Visibility = ViewStates.Gone;
-            }
         }
 
         private void OnBrowseQuizzesButtonClick(object sender, EventArgs e)
         {
             // Navigate to quiz list activity
             var intent = new Intent(this, typeof(QuizListActivity));
+            StartActivity(intent);
+        }
+
+        private void OnProfileButtonClick(object sender, EventArgs e)
+        {
+            // Navigate to user profile activity
+            var intent = new Intent(this, typeof(UserProfileActivity));
+            StartActivity(intent);
+        }
+
+        private void OnAdminDashboardButtonClick(object sender, EventArgs e)
+        {
+            // Navigate to admin dashboard
+            var intent = new Intent(this, typeof(AdminDashboardActivity));
             StartActivity(intent);
         }
 

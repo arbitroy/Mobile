@@ -104,18 +104,11 @@ namespace Mobile.Activities
             // Check if a username is saved
             string username = TokenManager.GetUsername(this);
 
-            // Navigate to dashboard or quiz list
-            Intent intent;
+            // Navigate to dashboard
+            Intent intent = new Intent(this, typeof(DashboardActivity));
             if (!string.IsNullOrEmpty(username))
             {
-                // Go to dashboard if we have user info
-                intent = new Intent(this, typeof(DashboardActivity));
                 intent.PutExtra("UserName", username);
-            }
-            else
-            {
-                // Otherwise just go to quiz list
-                intent = new Intent(this, typeof(QuizListActivity));
             }
 
             StartActivity(intent);

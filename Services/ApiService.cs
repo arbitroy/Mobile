@@ -243,34 +243,44 @@ namespace Mobile.Services
                     string errorMessage = "Registration failed";
                     try
                     {
-                        // Try to parse as error object with "message" property
-                        var errorObj = JsonConvert.DeserializeObject<Dictionary<string, object>>(responseContent);
-                        if (errorObj != null)
+                        // Try to parse as an ErrorResponse object
+                        var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent);
+                        if (errorResponse != null)
                         {
-                            // Look for common error properties
-                            if (errorObj.ContainsKey("message"))
+                            if (!string.IsNullOrEmpty(errorResponse.Message))
                             {
-                                errorMessage = errorObj["message"].ToString();
+                                errorMessage = errorResponse.Message;
                             }
-                            else if (errorObj.ContainsKey("error"))
+                            else if (!string.IsNullOrEmpty(errorResponse.Error))
                             {
-                                errorMessage = errorObj["error"].ToString();
+                                errorMessage = errorResponse.Error;
                             }
-                            else if (errorObj.ContainsKey("errors"))
+                            else if (errorResponse.Errors != null && errorResponse.Errors.Count > 0)
                             {
-                                // Handle the 'errors' object which might have validation errors
-                                var errorsObj = errorObj["errors"];
-                                if (errorsObj is Dictionary<string, object> errorsDict)
+                                // Get the first validation error
+                                foreach (var error in errorResponse.Errors)
                                 {
-                                    // Get the first error message
-                                    foreach (var entry in errorsDict)
+                                    if (error.Value != null && error.Value.Length > 0)
                                     {
-                                        if (entry.Value is Newtonsoft.Json.Linq.JArray jArray && jArray.Count > 0)
-                                        {
-                                            errorMessage = jArray[0].ToString();
-                                            break;
-                                        }
+                                        errorMessage = error.Value[0];
+                                        break;
                                     }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Try parsing as a simpler dictionary as fallback
+                            var errorObj = JsonConvert.DeserializeObject<Dictionary<string, object>>(responseContent);
+                            if (errorObj != null)
+                            {
+                                if (errorObj.ContainsKey("message"))
+                                {
+                                    errorMessage = errorObj["message"].ToString();
+                                }
+                                else if (errorObj.ContainsKey("error"))
+                                {
+                                    errorMessage = errorObj["error"].ToString();
                                 }
                             }
                         }
@@ -476,43 +486,6 @@ namespace Mobile.Services
             throw new Exception($"Failed to get quiz result: {response.ReasonPhrase}");
         }
 
-        private bool IsNetworkAvailable()
-        {
-            if (_context == null)
-                return true; // Can't check, assume it's available
-
-            ConnectivityManager connectivityManager = (ConnectivityManager)_context.GetSystemService(Context.ConnectivityService);
-            NetworkInfo activeNetworkInfo = connectivityManager.ActiveNetworkInfo;
-            return activeNetworkInfo != null && activeNetworkInfo.IsConnected;
-        }
-
-        private void EnsureAuthenticated()
-        {
-            if (_httpClient.DefaultRequestHeaders.Authorization == null)
-            {
-                // Try to load from shared preferences if context is available
-                if (_context != null)
-                {
-                    string savedToken = TokenManager.GetToken(_context);
-                    if (!string.IsNullOrEmpty(savedToken))
-                    {
-                        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", savedToken);
-                        Console.WriteLine("Token loaded from shared preferences and set in HttpClient");
-                        return;
-                    }
-                }
-
-                Console.WriteLine("Authentication failed: No token available");
-                throw new UnauthorizedAccessException("You must be logged in to access this resource. Please log in again.");
-            }
-            else
-            {
-                // Log that we're using an existing token
-                Console.WriteLine("Using existing token from HttpClient headers");
-            }
-        }
-
-
         public async Task<UserStats> GetUserStatsAsync()
         {
             EnsureAuthenticated();
@@ -610,42 +583,40 @@ namespace Mobile.Services
             throw new Exception($"Failed to change password: {errorContent}");
         }
 
-        public async Task ChangePasswordAsync(PasswordChangeRequest passwordChangeRequest)
+        private bool IsNetworkAvailable()
         {
-            EnsureAuthenticated();
+            if (_context == null)
+                return true; // Can't check, assume it's available
 
-            var json = JsonConvert.SerializeObject(passwordChangeRequest);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            ConnectivityManager connectivityManager = (ConnectivityManager)_context.GetSystemService(Context.ConnectivityService);
+            NetworkInfo activeNetworkInfo = connectivityManager.ActiveNetworkInfo;
+            return activeNetworkInfo != null && activeNetworkInfo.IsConnected;
+        }
 
-            var response = await _httpClient.PostAsync("user/change-password", content);
-
-            if (response.IsSuccessStatusCode)
+        private void EnsureAuthenticated()
+        {
+            if (_httpClient.DefaultRequestHeaders.Authorization == null)
             {
-                return;
-            }
-
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                throw new UnauthorizedAccessException("You must be logged in to change your password.");
-            }
-
-            var errorContent = await response.Content.ReadAsStringAsync();
-
-            // Try to parse the error message
-            try
-            {
-                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(errorContent);
-                if (errorResponse != null && !string.IsNullOrEmpty(errorResponse.Message))
+                // Try to load from shared preferences if context is available
+                if (_context != null)
                 {
-                    throw new Exception(errorResponse.Message);
+                    string savedToken = TokenManager.GetToken(_context);
+                    if (!string.IsNullOrEmpty(savedToken))
+                    {
+                        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", savedToken);
+                        Console.WriteLine("Token loaded from shared preferences and set in HttpClient");
+                        return;
+                    }
                 }
-            }
-            catch
-            {
-                // Fallback to the raw error content
-            }
 
-            throw new Exception($"Failed to change password: {errorContent}");
+                Console.WriteLine("Authentication failed: No token available");
+                throw new UnauthorizedAccessException("You must be logged in to access this resource. Please log in again.");
+            }
+            else
+            {
+                // Log that we're using an existing token
+                Console.WriteLine("Using existing token from HttpClient headers");
+            }
         }
 
         // Admin-specific methods

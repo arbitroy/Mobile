@@ -33,6 +33,22 @@ namespace Mobile.Services
             Console.WriteLine("Token saved to SharedPreferences");
         }
 
+        public static void SaveUsername(Context context, string username)
+        {
+            if (context == null || string.IsNullOrEmpty(username))
+            {
+                Console.WriteLine("Cannot save username: Context is null or username is empty");
+                return;
+            }
+
+            var prefs = context.GetSharedPreferences(PREFERENCES_NAME, FileCreationMode.Private);
+            var editor = prefs.Edit();
+            editor.PutString(USERNAME_KEY, username);
+            editor.Apply();
+
+            Console.WriteLine("Username updated in SharedPreferences");
+        }
+
         public static string GetToken(Context context)
         {
             if (context == null)
