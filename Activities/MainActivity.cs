@@ -13,6 +13,7 @@ namespace Mobile.Activities
         private EditText _emailEditText;
         private EditText _passwordEditText;
         private Button _loginButton;
+        private TextView _registerLinkTextView;
         private ApiService _apiService;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -26,6 +27,7 @@ namespace Mobile.Activities
             _emailEditText = FindViewById<EditText>(Resource.Id.emailEditText);
             _passwordEditText = FindViewById<EditText>(Resource.Id.passwordEditText);
             _loginButton = FindViewById<Button>(Resource.Id.loginButton);
+            _registerLinkTextView = FindViewById<TextView>(Resource.Id.registerLinkTextView);
 
             // Initialize service with context
             _apiService = new ApiService(this);
@@ -41,6 +43,7 @@ namespace Mobile.Activities
 
             // Set up event handlers
             _loginButton.Click += OnLoginButtonClick;
+            _registerLinkTextView.Click += OnRegisterLinkClick;
         }
 
         private async void OnLoginButtonClick(object sender, EventArgs e)
@@ -117,6 +120,13 @@ namespace Mobile.Activities
 
             StartActivity(intent);
             Finish(); // Close login activity
+        }
+
+        private void OnRegisterLinkClick(object sender, EventArgs e)
+        {
+            // Navigate to registration screen
+            var intent = new Intent(this, typeof(RegisterActivity));
+            StartActivity(intent);
         }
     }
 }

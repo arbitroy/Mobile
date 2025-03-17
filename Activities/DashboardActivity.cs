@@ -21,6 +21,7 @@ namespace Mobile.Activities
         private TextView _bestScoreTextView;
         private RecyclerView _recentAttemptsRecyclerView;
         private Button _browseQuizzesButton;
+        private Button _profileButton;
         private ApiService _apiService;
         private ProgressBar _loadingProgressBar;
         private TextView _emptyAttemptsTextView;
@@ -39,6 +40,7 @@ namespace Mobile.Activities
             _bestScoreTextView = FindViewById<TextView>(Resource.Id.bestScoreTextView);
             _recentAttemptsRecyclerView = FindViewById<RecyclerView>(Resource.Id.recentAttemptsRecyclerView);
             _browseQuizzesButton = FindViewById<Button>(Resource.Id.browseQuizzesButton);
+            _profileButton = FindViewById<Button>(Resource.Id.profileButton);
             _loadingProgressBar = FindViewById<ProgressBar>(Resource.Id.loadingProgressBar);
             _emptyAttemptsTextView = FindViewById<TextView>(Resource.Id.emptyAttemptsTextView);
 

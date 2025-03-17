@@ -65,6 +65,7 @@
     <Compile Include="Activities\QuizDetailActivity.cs" />
     <Compile Include="Activities\QuizListActivity.cs" />
     <Compile Include="Activities\QuizResultActivity.cs" />
+    <Compile Include="Activities\RegisterActivity.cs" />
     <Compile Include="Activities\TakeQuizActivity.cs" />
     <Compile Include="Models\AuthResponse.cs" />
     <Compile Include="Models\LoginRequest.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="Models\QuizDetail.cs" />
     <Compile Include="Models\QuizResult.cs" />
     <Compile Include="Models\QuizSubmission.cs" />
+    <Compile Include="Models\RegisterRequest.cs" />
     <Compile Include="Models\UserStats.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -153,6 +155,9 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\xml\network_security_config.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\activity_register.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

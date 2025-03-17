@@ -11,6 +11,7 @@ using Android.Net;
 using Android.Content;
 using Org.Apache.Http.Client;
 using Android.OS;
+using Newtonsoft.Json.Linq;
 
 namespace Mobile.Services
 {
@@ -20,11 +21,11 @@ namespace Mobile.Services
         private readonly Context _context;
 
         // Special IP address for Android Emulator
-        private const string EmulatorBaseUrl = "http://x.x.x.x:5063/api/";
+        private const string EmulatorBaseUrl = "http://10.0.2.2:5063/api/";
 
         // Your computer's actual local network IP address
         // This should match what you see in your ipconfig output for the WiFi adapter
-        private const string PhysicalDeviceBaseUrl = "http://x.x.x.x:5063/api/";
+        private const string PhysicalDeviceBaseUrl = "http://192.168.1.15:5063/api/";
 
         public ApiService(Context context = null)
         {
@@ -162,6 +163,131 @@ namespace Mobile.Services
                 {
                     Console.WriteLine("Login request timed out");
                     throw new Exception($"Login request timed out. Please verify your network connection and that the API server is running at {_httpClient.BaseAddress}.");
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"Network error: {ex.Message}");
+                    throw new Exception($"Network error: {ex.Message}. Make sure the API server is running and accessible at {_httpClient.BaseAddress}");
+                }
+            }
+        }
+
+
+        public async Task<AuthResponse> RegisterAsync(RegisterRequest registerRequest)
+        {
+            Console.WriteLine($"Attempting registration for {registerRequest.Email} to {_httpClient.BaseAddress}auth/register");
+
+            // Clear any existing authorization headers
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+
+            // Clear any existing tokens
+            if (_context != null)
+            {
+                TokenManager.ClearToken(_context);
+            }
+
+            var json = JsonConvert.SerializeObject(registerRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
+            {
+                try
+                {
+                    Console.WriteLine("Sending registration request...");
+                    var response = await _httpClient.PostAsync("auth/register", content, cts.Token);
+                    Console.WriteLine($"Received response: {response.StatusCode}");
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    // Check if the response is HTML (error page)
+                    if (responseContent.Contains("<!DOCTYPE html>") || responseContent.Contains("<html"))
+                    {
+                        Console.WriteLine("Received HTML instead of JSON registration response");
+                        throw new Exception("The server returned an unexpected response. Please try again later.");
+                    }
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine("Registration response received successfully");
+
+                        try
+                        {
+                            var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseContent);
+
+                            // Store token in header for this instance
+                            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.Token);
+
+                            // Store token in shared preferences
+                            if (_context != null)
+                            {
+                                TokenManager.SaveToken(
+                                    _context,
+                                    authResponse.Token,
+                                    authResponse.User.UserName,
+                                    authResponse.User.Id
+                                );
+                                Console.WriteLine("Token saved to shared preferences after registration");
+                            }
+
+                            return authResponse;
+                        }
+                        catch (JsonException jsonEx)
+                        {
+                            Console.WriteLine($"Failed to parse registration response: {jsonEx.Message}");
+                            Console.WriteLine($"Response content was: {responseContent}");
+                            throw new Exception("The server returned data in an unexpected format. Please try again later.");
+                        }
+                    }
+
+                    // Try to extract error message from response content
+                    string errorMessage = "Registration failed";
+                    try
+                    {
+                        // Try to parse as error object with "message" property
+                        var errorObj = JsonConvert.DeserializeObject<Dictionary<string, object>>(responseContent);
+                        if (errorObj != null)
+                        {
+                            // Look for common error properties
+                            if (errorObj.ContainsKey("message"))
+                            {
+                                errorMessage = errorObj["message"].ToString();
+                            }
+                            else if (errorObj.ContainsKey("error"))
+                            {
+                                errorMessage = errorObj["error"].ToString();
+                            }
+                            else if (errorObj.ContainsKey("errors"))
+                            {
+                                // Handle the 'errors' object which might have validation errors
+                                var errorsObj = errorObj["errors"];
+                                if (errorsObj is Dictionary<string, object> errorsDict)
+                                {
+                                    // Get the first error message
+                                    foreach (var entry in errorsDict)
+                                    {
+                                        if (entry.Value is Newtonsoft.Json.Linq.JArray jArray && jArray.Count > 0)
+                                        {
+                                            errorMessage = jArray[0].ToString();
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // If we can't parse the error, use the original response
+                        errorMessage = $"Registration failed: {response.StatusCode} - {responseContent}";
+                    }
+
+                    Console.WriteLine($"Error response: {errorMessage}");
+                    throw new Exception(errorMessage);
+                }
+                catch (TaskCanceledException)
+                {
+                    Console.WriteLine("Registration request timed out");
+                    throw new Exception($"Registration request timed out. Please verify your network connection and that the API server is running at {_httpClient.BaseAddress}.");
                 }
                 catch (HttpRequestException ex)
                 {
@@ -350,21 +476,6 @@ namespace Mobile.Services
             throw new Exception($"Failed to get quiz result: {response.ReasonPhrase}");
         }
 
-        public async Task<UserStats> GetUserStatsAsync()
-        {
-            EnsureAuthenticated();
-
-            var response = await _httpClient.GetAsync("user/stats");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseJson = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<UserStats>(responseJson);
-            }
-
-            throw new Exception($"Failed to get user stats: {response.ReasonPhrase}");
-        }
-
         private bool IsNetworkAvailable()
         {
             if (_context == null)
@@ -399,6 +510,164 @@ namespace Mobile.Services
                 // Log that we're using an existing token
                 Console.WriteLine("Using existing token from HttpClient headers");
             }
+        }
+
+
+        public async Task<UserStats> GetUserStatsAsync()
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.GetAsync("user/stats");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<UserStats>(responseJson);
+            }
+
+            throw new Exception($"Failed to get user stats: {response.ReasonPhrase}");
+        }
+
+        public async Task<UserProfile> GetUserProfileAsync()
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.GetAsync("user/profile");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<UserProfile>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be logged in to access your profile.");
+            }
+
+            throw new Exception($"Failed to get user profile: {response.ReasonPhrase}");
+        }
+
+        public async Task<UserProfile> UpdateUserProfileAsync(ProfileUpdateRequest updateRequest)
+        {
+            EnsureAuthenticated();
+
+            var json = JsonConvert.SerializeObject(updateRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync("user/profile", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<UserProfile>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be logged in to update your profile.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to update profile: {errorContent}");
+        }
+
+        public async Task ChangePasswordAsync(PasswordChangeRequest passwordChangeRequest)
+        {
+            EnsureAuthenticated();
+
+            var json = JsonConvert.SerializeObject(passwordChangeRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("user/change-password", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be logged in to change your password.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+
+            // Try to parse the error message
+            try
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(errorContent);
+                if (errorResponse != null && !string.IsNullOrEmpty(errorResponse.Message))
+                {
+                    throw new Exception(errorResponse.Message);
+                }
+            }
+            catch
+            {
+                // Fallback to the raw error content
+            }
+
+            throw new Exception($"Failed to change password: {errorContent}");
+        }
+
+        public async Task ChangePasswordAsync(PasswordChangeRequest passwordChangeRequest)
+        {
+            EnsureAuthenticated();
+
+            var json = JsonConvert.SerializeObject(passwordChangeRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("user/change-password", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be logged in to change your password.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+
+            // Try to parse the error message
+            try
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(errorContent);
+                if (errorResponse != null && !string.IsNullOrEmpty(errorResponse.Message))
+                {
+                    throw new Exception(errorResponse.Message);
+                }
+            }
+            catch
+            {
+                // Fallback to the raw error content
+            }
+
+            throw new Exception($"Failed to change password: {errorContent}");
+        }
+
+        // Admin-specific methods
+        public async Task<AdminStats> GetAdminStatsAsync()
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.GetAsync("admin/stats");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<AdminStats>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to access these statistics.");
+            }
+
+            throw new Exception($"Failed to get admin statistics: {response.ReasonPhrase}");
         }
     }
 }
