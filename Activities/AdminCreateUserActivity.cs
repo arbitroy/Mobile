@@ -24,33 +24,105 @@ namespace Mobile.Activities
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
+            try
+            {
+                base.OnCreate(savedInstanceState);
+                Console.WriteLine("AdminCreateUser: OnCreate started");
 
-            // Set our view from the layout resource
-            SetContentView(Resource.Layout.activity_admin_create_user);
+                // Set our view from the layout resource
+                SetContentView(Resource.Layout.activity_admin_create_user);
+                Console.WriteLine("AdminCreateUser: SetContentView completed");
 
-            // Initialize UI elements
-            _emailEditText = FindViewById<EditText>(Resource.Id.emailEditText);
-            _passwordEditText = FindViewById<EditText>(Resource.Id.passwordEditText);
-            _confirmPasswordEditText = FindViewById<EditText>(Resource.Id.confirmPasswordEditText);
-            _usernameEditText = FindViewById<EditText>(Resource.Id.usernameEditText);
-            _adminRoleCheckBox = FindViewById<CheckBox>(Resource.Id.adminRoleCheckBox);
-            _createUserButton = FindViewById<Button>(Resource.Id.createUserButton);
-            _cancelButton = FindViewById<Button>(Resource.Id.cancelButton);
-            _loadingProgressBar = FindViewById<ProgressBar>(Resource.Id.loadingProgressBar);
+                // Initialize UI elements
+                InitializeUIElements();
 
-            // Set up event handlers
-            _createUserButton.Click += OnCreateUserButtonClick;
-            _cancelButton.Click += OnCancelButtonClick;
+                // Set up event handlers
+                SetupEventHandlers();
+
+                Console.WriteLine("AdminCreateUser: OnCreate completed");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AdminCreateUser: Exception in OnCreate: {ex.Message}");
+                Console.WriteLine($"AdminCreateUser: Stack trace: {ex.StackTrace}");
+                Toast.MakeText(this, "Error initializing create user page: " + ex.Message, ToastLength.Long).Show();
+            }
+        }
+
+        private void InitializeUIElements()
+        {
+            Console.WriteLine("AdminCreateUser: InitializeUIElements started");
+
+            try
+            {
+                _emailEditText = FindViewById<EditText>(Resource.Id.emailEditText);
+                _passwordEditText = FindViewById<EditText>(Resource.Id.passwordEditText);
+                _confirmPasswordEditText = FindViewById<EditText>(Resource.Id.confirmPasswordEditText);
+                _usernameEditText = FindViewById<EditText>(Resource.Id.usernameEditText);
+                _adminRoleCheckBox = FindViewById<CheckBox>(Resource.Id.adminRoleCheckBox);
+                _createUserButton = FindViewById<Button>(Resource.Id.createUserButton);
+                _cancelButton = FindViewById<Button>(Resource.Id.cancelButton);
+                _loadingProgressBar = FindViewById<ProgressBar>(Resource.Id.loadingProgressBar);
+
+                // Verify UI elements were found
+                if (_emailEditText == null) Console.WriteLine("AdminCreateUser: emailEditText is null");
+                if (_passwordEditText == null) Console.WriteLine("AdminCreateUser: passwordEditText is null");
+                if (_confirmPasswordEditText == null) Console.WriteLine("AdminCreateUser: confirmPasswordEditText is null");
+                if (_usernameEditText == null) Console.WriteLine("AdminCreateUser: usernameEditText is null");
+                if (_adminRoleCheckBox == null) Console.WriteLine("AdminCreateUser: adminRoleCheckBox is null");
+                if (_createUserButton == null) Console.WriteLine("AdminCreateUser: createUserButton is null");
+                if (_cancelButton == null) Console.WriteLine("AdminCreateUser: cancelButton is null");
+                if (_loadingProgressBar == null) Console.WriteLine("AdminCreateUser: loadingProgressBar is null");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AdminCreateUser: Exception in InitializeUIElements: {ex.Message}");
+                throw;
+            }
+        }
+
+        private void SetupEventHandlers()
+        {
+            Console.WriteLine("AdminCreateUser: SetupEventHandlers started");
+
+            try
+            {
+                if (_createUserButton != null)
+                    _createUserButton.Click += OnCreateUserButtonClick;
+
+                if (_cancelButton != null)
+                    _cancelButton.Click += OnCancelButtonClick;
+
+                Console.WriteLine("AdminCreateUser: Event handlers set up");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AdminCreateUser: Exception in SetupEventHandlers: {ex.Message}");
+                throw;
+            }
         }
 
         protected override void OnRolesLoaded()
         {
-            // Ensure user has admin access
-            if (!IsAdmin)
+            try
             {
-                Toast.MakeText(this, "You need administrator privileges to access this page", ToastLength.Long).Show();
-                Finish();
+                Console.WriteLine("AdminCreateUser: OnRolesLoaded called");
+
+                // Ensure user has admin access
+                if (!IsAdmin)
+                {
+                    Console.WriteLine("AdminCreateUser: User does not have admin role");
+                    Toast.MakeText(this, "You need administrator privileges to access this page", ToastLength.Long).Show();
+                    Finish();
+                }
+                else
+                {
+                    Console.WriteLine("AdminCreateUser: User has admin role confirmed");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AdminCreateUser: Exception in OnRolesLoaded: {ex.Message}");
             }
         }
 
@@ -58,12 +130,16 @@ namespace Mobile.Activities
         {
             try
             {
+                Console.WriteLine("AdminCreateUser: OnCreateUserButtonClick started");
+
                 // Get input values
-                string email = _emailEditText.Text?.Trim();
-                string password = _passwordEditText.Text;
-                string confirmPassword = _confirmPasswordEditText.Text;
-                string username = _usernameEditText.Text?.Trim();
-                bool isAdmin = _adminRoleCheckBox.Checked;
+                string email = _emailEditText?.Text?.Trim();
+                string password = _passwordEditText?.Text;
+                string confirmPassword = _confirmPasswordEditText?.Text;
+                string username = _usernameEditText?.Text?.Trim();
+                bool isAdmin = _adminRoleCheckBox?.Checked ?? false;
+
+                Console.WriteLine($"AdminCreateUser: Email: {email}, Username: {username}, IsAdmin: {isAdmin}");
 
                 // Validate inputs
                 if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password) ||
@@ -95,8 +171,15 @@ namespace Mobile.Activities
                 }
 
                 // Show loading indicator
-                _loadingProgressBar.Visibility = Android.Views.ViewStates.Visible;
-                _createUserButton.Enabled = false;
+                if (_loadingProgressBar != null)
+                {
+                    _loadingProgressBar.Visibility = Android.Views.ViewStates.Visible;
+                }
+
+                if (_createUserButton != null)
+                {
+                    _createUserButton.Enabled = false;
+                }
 
                 // Create user roles list
                 List<string> roles = new List<string> { "User" };
@@ -114,31 +197,55 @@ namespace Mobile.Activities
                     Roles = roles
                 };
 
+                Console.WriteLine("AdminCreateUser: Calling ApiService.CreateUserAsync");
+
                 // Call API to create user
                 await ApiService.CreateUserAsync(createUserRequest);
 
                 Toast.MakeText(this, "User created successfully", ToastLength.Short).Show();
+                Console.WriteLine("AdminCreateUser: User created successfully");
+
                 Finish(); // Return to previous activity
             }
             catch (UnauthorizedAccessException)
             {
+                Console.WriteLine("AdminCreateUser: UnauthorizedAccessException caught");
                 HandleAuthError();
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"AdminCreateUser: Exception in OnCreateUserButtonClick: {ex.Message}");
+                Console.WriteLine($"AdminCreateUser: Stack trace: {ex.StackTrace}");
                 Toast.MakeText(this, $"Failed to create user: {ex.Message}", ToastLength.Long).Show();
             }
             finally
             {
                 // Hide loading indicator
-                _loadingProgressBar.Visibility = Android.Views.ViewStates.Gone;
-                _createUserButton.Enabled = true;
+                if (_loadingProgressBar != null)
+                {
+                    _loadingProgressBar.Visibility = Android.Views.ViewStates.Gone;
+                }
+
+                if (_createUserButton != null)
+                {
+                    _createUserButton.Enabled = true;
+                }
+
+                Console.WriteLine("AdminCreateUser: OnCreateUserButtonClick completed");
             }
         }
 
         private void OnCancelButtonClick(object sender, EventArgs e)
         {
-            Finish(); // Return to previous activity
+            try
+            {
+                Console.WriteLine("AdminCreateUser: OnCancelButtonClick - finishing activity");
+                Finish(); // Return to previous activity
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AdminCreateUser: Exception in OnCancelButtonClick: {ex.Message}");
+            }
         }
 
         private bool IsValidEmail(string email)
@@ -148,42 +255,58 @@ namespace Mobile.Activities
                 var regex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
                 return regex.IsMatch(email);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"AdminCreateUser: Exception in IsValidEmail: {ex.Message}");
                 return false;
             }
         }
 
         private bool IsValidPassword(string password)
         {
-            // Check minimum length
-            if (string.IsNullOrEmpty(password) || password.Length < 8)
-                return false;
+            try
+            {
+                // Check minimum length
+                if (string.IsNullOrEmpty(password) || password.Length < 8)
+                    return false;
 
-            // Check for uppercase letter
-            if (!Regex.IsMatch(password, @"[A-Z]"))
-                return false;
+                // Check for uppercase letter
+                if (!Regex.IsMatch(password, @"[A-Z]"))
+                    return false;
 
-            // Check for lowercase letter
-            if (!Regex.IsMatch(password, @"[a-z]"))
-                return false;
+                // Check for lowercase letter
+                if (!Regex.IsMatch(password, @"[a-z]"))
+                    return false;
 
-            // Check for digit
-            if (!Regex.IsMatch(password, @"[0-9]"))
-                return false;
+                // Check for digit
+                if (!Regex.IsMatch(password, @"[0-9]"))
+                    return false;
 
-            // Check for special character
-            if (!Regex.IsMatch(password, @"[^a-zA-Z0-9]"))
-                return false;
+                // Check for special character
+                if (!Regex.IsMatch(password, @"[^a-zA-Z0-9]"))
+                    return false;
 
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AdminCreateUser: Exception in IsValidPassword: {ex.Message}");
+                return false;
+            }
         }
 
         private void HandleAuthError()
         {
-            TokenManager.ClearToken(this);
-            Toast.MakeText(this, "Your session has expired. Please log in again.", ToastLength.Long).Show();
-            RedirectToLogin();
+            try
+            {
+                TokenManager.ClearToken(this);
+                Toast.MakeText(this, "Your session has expired. Please log in again.", ToastLength.Long).Show();
+                RedirectToLogin();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AdminCreateUser: Exception in HandleAuthError: {ex.Message}");
+            }
         }
     }
 }

@@ -741,105 +741,228 @@ namespace Mobile.Services
             throw new Exception($"Failed to delete quiz: {errorContent}");
         }
 
+        // Add/Update these methods in your ApiService class
+
         // User Administration methods
         public async Task<List<UserProfile>> GetUsersAsync()
         {
             EnsureAuthenticated();
+            Console.WriteLine("ApiService: Getting all users");
 
             var response = await _httpClient.GetAsync("admin/users");
 
             if (response.IsSuccessStatusCode)
             {
                 var responseJson = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"ApiService: Get users response: {responseJson}");
                 return JsonConvert.DeserializeObject<List<UserProfile>>(responseJson);
             }
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
                 response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
+                Console.WriteLine("ApiService: Unauthorized access to users list");
                 throw new UnauthorizedAccessException("You must be an administrator to access user list.");
             }
 
-            throw new Exception($"Failed to get users: {response.ReasonPhrase}");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"ApiService: Error getting users: {errorContent}");
+            throw new Exception($"Failed to get users: {errorContent}");
         }
 
         public async Task<UserProfile> GetUserByIdAsync(string userId)
         {
             EnsureAuthenticated();
+            Console.WriteLine($"ApiService: Getting user by ID: {userId}");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentException("User ID cannot be empty");
+            }
 
             var response = await _httpClient.GetAsync($"admin/users/{userId}");
 
             if (response.IsSuccessStatusCode)
             {
                 var responseJson = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"ApiService: Get user response: {responseJson}");
                 return JsonConvert.DeserializeObject<UserProfile>(responseJson);
             }
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
                 response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
+                Console.WriteLine("ApiService: Unauthorized access to user details");
                 throw new UnauthorizedAccessException("You must be an administrator to access user details.");
             }
 
-            throw new Exception($"Failed to get user details: {response.ReasonPhrase}");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"ApiService: Error getting user: {errorContent}");
+            throw new Exception($"Failed to get user details: {errorContent}");
         }
 
+        // Modified: Use the auth/register endpoint for user creation
         public async Task<UserProfile> CreateUserAsync(AdminCreateUserRequest request)
         {
             EnsureAuthenticated();
+            Console.WriteLine($"ApiService: Creating user with email: {request.Email}, username: {request.UserName}");
 
-            var json = JsonConvert.SerializeObject(request);
+            // Convert the admin request to a register request
+            var registerRequest = new RegisterRequest
+            {
+                Email = request.Email,
+                Password = request.Password,
+                ConfirmPassword = request.Password // Using the same password
+            };
+
+            var json = JsonConvert.SerializeObject(registerRequest);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("admin/users", content);
+            Console.WriteLine($"ApiService: User creation payload: {json}");
+
+            var response = await _httpClient.PostAsync("auth/register", content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"ApiService: Create user response: {responseContent}");
 
             if (response.IsSuccessStatusCode)
             {
-                var responseJson = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<UserProfile>(responseJson);
+                // If registration is successful, update the username and roles if needed
+                var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseContent);
+
+                if (authResponse != null && authResponse.User != null)
+                {
+                    // If username needs to be updated or roles need to be set
+                    if (authResponse.User.UserName != request.UserName || request.Roles.Contains("Administrator"))
+                    {
+                        try
+                        {
+                            // Update the username and/or roles
+                            await UpdateUserRolesAsync(authResponse.User.Id, request.Roles);
+
+                            // Get the updated user profile
+                            return await GetUserByIdAsync(authResponse.User.Id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"ApiService: Error updating new user: {ex.Message}");
+                            // Still return the created user even if update fails
+                            var userProfile = new UserProfile
+                            {
+                                Id = authResponse.User.Id,
+                                UserName = authResponse.User.UserName,
+                                Email = authResponse.User.Email,
+                                Roles = new List<string> { "User" }
+                            };
+                            return userProfile;
+                        }
+                    }
+
+                    // Convert from AuthResponse.User to UserProfile
+                    var profile = new UserProfile
+                    {
+                        Id = authResponse.User.Id,
+                        UserName = authResponse.User.UserName,
+                        Email = authResponse.User.Email,
+                        Roles = new List<string> { "User" }
+                    };
+
+                    return profile;
+                }
+
+                throw new Exception("User created but response contained no user data");
             }
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
                 response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
+                Console.WriteLine("ApiService: Unauthorized access when creating user");
                 throw new UnauthorizedAccessException("You must be an administrator to create users.");
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Failed to create user: {errorContent}");
+            Console.WriteLine($"ApiService: Error creating user: {responseContent}");
+
+            try
+            {
+                // Try to extract meaningful error from response
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent);
+                if (errorResponse != null && !string.IsNullOrEmpty(errorResponse.Message))
+                {
+                    throw new Exception(errorResponse.Message);
+                }
+            }
+            catch { /* Ignore parsing errors */ }
+
+            throw new Exception($"Failed to create user: {responseContent}");
         }
 
+        // Modified: Update uses the roles PATCH endpoint
         public async Task<UserProfile> UpdateUserAsync(string userId, AdminUpdateUserRequest request)
         {
             EnsureAuthenticated();
+            Console.WriteLine($"ApiService: Updating user {userId} with username: {request.UserName}, roles: {string.Join(", ", request.Roles)}");
 
-            var json = JsonConvert.SerializeObject(request);
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentException("User ID cannot be empty");
+            }
+
+            // First, update the roles
+            try
+            {
+                await UpdateUserRolesAsync(userId, request.Roles);
+                Console.WriteLine("ApiService: User roles updated successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ApiService: Error updating user roles: {ex.Message}");
+                throw new Exception($"Failed to update user roles: {ex.Message}");
+            }
+
+            // Return the updated user profile
+            return await GetUserByIdAsync(userId);
+        }
+
+        // New method for updating user roles
+        private async Task UpdateUserRolesAsync(string userId, List<string> roles)
+        {
+            Console.WriteLine($"ApiService: Updating roles for user {userId}: {string.Join(", ", roles)}");
+
+            var json = JsonConvert.SerializeObject(roles);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PutAsync($"admin/users/{userId}", content);
+            var response = await _httpClient.PatchAsync($"admin/users/{userId}/roles", content);
 
-            if (response.IsSuccessStatusCode)
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"ApiService: Update roles response: {responseContent}");
+
+            if (!response.IsSuccessStatusCode)
             {
-                var responseJson = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<UserProfile>(responseJson);
-            }
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                    response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    throw new UnauthorizedAccessException("You must be an administrator to update user roles.");
+                }
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
-                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-            {
-                throw new UnauthorizedAccessException("You must be an administrator to update users.");
+                throw new Exception($"Failed to update user roles: {responseContent}");
             }
-
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Failed to update user: {errorContent}");
         }
 
         public async Task DeleteUserAsync(string userId)
         {
             EnsureAuthenticated();
+            Console.WriteLine($"ApiService: Deleting user {userId}");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentException("User ID cannot be empty");
+            }
 
             var response = await _httpClient.DeleteAsync($"admin/users/{userId}");
 
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"ApiService: Delete user response: {responseContent}");
+
             if (response.IsSuccessStatusCode)
             {
                 return;
@@ -848,35 +971,20 @@ namespace Mobile.Services
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
                 response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
+                Console.WriteLine("ApiService: Unauthorized access when deleting user");
                 throw new UnauthorizedAccessException("You must be an administrator to delete users.");
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Failed to delete user: {errorContent}");
+            Console.WriteLine($"ApiService: Error deleting user: {responseContent}");
+            throw new Exception($"Failed to delete user: {responseContent}");
         }
 
+        // Note: There is no reset password endpoint in the API, so this would need to be implemented
+        // on the server side. This is a placeholder implementation that will throw an error.
         public async Task ResetUserPasswordAsync(AdminResetPasswordRequest request)
         {
-            EnsureAuthenticated();
-
-            var json = JsonConvert.SerializeObject(request);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync("admin/users/reset-password", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return;
-            }
-
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
-                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-            {
-                throw new UnauthorizedAccessException("You must be an administrator to reset user passwords.");
-            }
-
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Failed to reset password: {errorContent}");
+            throw new NotImplementedException("Password reset functionality not available in the API. " +
+                "You would need to implement a password reset endpoint on the server side.");
         }
     }
 }
