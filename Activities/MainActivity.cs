@@ -15,6 +15,7 @@ namespace Mobile.Activities
         private Button _loginButton;
         private TextView _registerLinkTextView;
         private ApiService _apiService;
+        private TextView _forgotPasswordLink;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -28,6 +29,8 @@ namespace Mobile.Activities
             _passwordEditText = FindViewById<EditText>(Resource.Id.passwordEditText);
             _loginButton = FindViewById<Button>(Resource.Id.loginButton);
             _registerLinkTextView = FindViewById<TextView>(Resource.Id.registerLinkTextView);
+            _forgotPasswordLink = FindViewById<TextView>(Resource.Id.forgotPasswordLinkTextView);
+
 
             // Initialize service with context
             _apiService = new ApiService(this);
@@ -104,8 +107,8 @@ namespace Mobile.Activities
             // Check if a username is saved
             string username = TokenManager.GetUsername(this);
 
-            // Navigate to dashboard
-            Intent intent = new Intent(this, typeof(DashboardActivity));
+            // Navigate to the new dashboard
+            Intent intent = new Intent(this, typeof(UserDashboardActivity)); // Use the new dashboard
             if (!string.IsNullOrEmpty(username))
             {
                 intent.PutExtra("UserName", username);
@@ -119,6 +122,13 @@ namespace Mobile.Activities
         {
             // Navigate to registration screen
             var intent = new Intent(this, typeof(RegisterActivity));
+            StartActivity(intent);
+        }
+
+        private void OnForgotPasswordLinkClick(object sender, EventArgs e)
+        {
+            // Navigate to forgot password screen
+            var intent = new Intent(this, typeof(ForgotPasswordActivity));
             StartActivity(intent);
         }
     }
