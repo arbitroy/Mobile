@@ -6,36 +6,36 @@ namespace Mobile.Models
 {
     public class UserProfile
     {
-        [JsonProperty("id")]
         public string Id { get; set; }
-
-        [JsonProperty("userName")]
         public string UserName { get; set; }
-
-        [JsonProperty("email")]
         public string Email { get; set; }
-
-        [JsonProperty("lastLoginTime")]
         public DateTime LastLoginTime { get; set; }
-
-        [JsonProperty("roles")]
         public List<string> Roles { get; set; } = new List<string>();
-
-        [JsonProperty("quizzesTaken")]
         public int QuizzesTaken { get; set; }
-
-        [JsonProperty("averageScore")]
         public double AverageScore { get; set; }
     }
 
     public class ProfileUpdateRequest
     {
-        [JsonProperty("userName")]
         public string UserName { get; set; }
     }
 
     public class PasswordChangeRequest
     {
+        public string CurrentPassword { get; set; }
+        public string NewPassword { get; set; }
+        public string ConfirmPassword { get; set; }
+    }
+
+    // Enhanced profile update model
+    public class UpdateProfileRequest
+    {
+        [JsonProperty("email")]
+        public string Email { get; set; }
+
+        [JsonProperty("updatePassword")]
+        public bool UpdatePassword { get; set; }
+
         [JsonProperty("currentPassword")]
         public string CurrentPassword { get; set; }
 
@@ -44,5 +44,14 @@ namespace Mobile.Models
 
         [JsonProperty("confirmPassword")]
         public string ConfirmPassword { get; set; }
+    }
+
+    public class QuizAttemptDetailDto : QuizAttemptSummary
+    {
+        [JsonProperty("startTime")]
+        public DateTime StartTime { get; set; }
+
+        [JsonProperty("duration")]
+        public int Duration { get; set; } // in minutes
     }
 }

@@ -78,6 +78,46 @@
                 android:textStyle="italic"
                 android:layout_marginBottom="16dp"/>
 
+			<CheckBox
+                android:id="@+id/setNewPasswordCheckBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Set New Password"
+                android:layout_marginBottom="8dp"/>
+
+			<LinearLayout
+                android:id="@+id/passwordLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+				<TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="New Password"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
+
+				<EditText
+                    android:id="@+id/newPasswordEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter new password"
+                    android:inputType="textPassword"
+                    android:padding="12dp"
+                    android:background="@drawable/edit_text_background"
+                    android:layout_marginBottom="8dp"/>
+
+				<TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Password must be at least 8 characters long and include uppercase, lowercase, number, and special character."
+                    android:textSize="12sp"
+                    android:textColor="#757575"
+                    android:layout_marginBottom="16dp"/>
+			</LinearLayout>
+
 			<Button
                 android:id="@+id/resetPasswordButton"
                 android:layout_width="match_parent"

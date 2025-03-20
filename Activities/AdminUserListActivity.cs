@@ -23,6 +23,7 @@ namespace Mobile.Activities
         private SearchView _searchView;
         private List<UserProfile> _users;
         private AdminUserAdapter _adapter;
+        private Button _downloadReportButton;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -37,6 +38,11 @@ namespace Mobile.Activities
             _emptyTextView = FindViewById<TextView>(Resource.Id.emptyTextView);
             _createUserButton = FindViewById<Button>(Resource.Id.createUserButton);
             _searchView = FindViewById<SearchView>(Resource.Id.searchView);
+            _downloadReportButton = FindViewById<Button>(Resource.Id.downloadReportButton);
+            if (_downloadReportButton != null)
+            {
+                _downloadReportButton.Click += OnDownloadReportButtonClick;
+            }
 
             // Set up RecyclerView
             _userRecyclerView.SetLayoutManager(new LinearLayoutManager(this));
@@ -126,6 +132,42 @@ namespace Mobile.Activities
             if (_adapter != null)
             {
                 _adapter.Filter(e.NewText);
+            }
+        }
+
+        private async void OnDownloadReportButtonClick(object sender, EventArgs e)
+        {
+            try
+            {
+                // Show loading indicator
+                _loadingProgressBar.Visibility = ViewStates.Visible;
+                _downloadReportButton.Enabled = false;
+
+                // Download report
+                byte[] reportData = await ApiService.DownloadUserReportAsync();
+
+                // Save to file in Downloads folder
+                string fileName = $"user-report-{DateTime.Now:yyyyMMdd}.csv";
+                string filePath = System.IO.Path.Combine(Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads).AbsolutePath, fileName);
+
+                System.IO.File.WriteAllBytes(filePath, reportData);
+
+                Toast.MakeText(this, $"Report downloaded to {filePath}", ToastLength.Long).Show();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                HandleAuthError();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error downloading report: {ex}");
+                Toast.MakeText(this, $"Failed to download report: {ex.Message}", ToastLength.Long).Show();
+            }
+            finally
+            {
+                // Hide loading indicator
+                _loadingProgressBar.Visibility = ViewStates.Gone;
+                _downloadReportButton.Enabled = true;
             }
         }
 

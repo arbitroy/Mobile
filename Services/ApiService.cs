@@ -12,6 +12,7 @@ using Android.Content;
 using Org.Apache.Http.Client;
 using Android.OS;
 using Newtonsoft.Json.Linq;
+using Android.Widget;
 
 namespace Mobile.Services
 {
@@ -981,10 +982,197 @@ namespace Mobile.Services
 
         // Note: There is no reset password endpoint in the API, so this would need to be implemented
         // on the server side. This is a placeholder implementation that will throw an error.
-        public async Task ResetUserPasswordAsync(AdminResetPasswordRequest request)
+        public async Task<bool> ForgotPasswordAsync(string email)
         {
-            throw new NotImplementedException("Password reset functionality not available in the API. " +
-                "You would need to implement a password reset endpoint on the server side.");
+            // This doesn't require authentication
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+
+            var requestData = new { Email = email };
+            var json = JsonConvert.SerializeObject(requestData);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("auth/forgot-password", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Password reset request failed: {errorContent}");
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string code, string newPassword, string confirmPassword)
+        {
+            // This doesn't require authentication
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+
+            var requestData = new
+            {
+                Email = email,
+                Code = code,
+                Password = newPassword,
+                ConfirmPassword = confirmPassword
+            };
+
+            var json = JsonConvert.SerializeObject(requestData);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("auth/reset-password", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Password reset failed: {errorContent}");
+        }
+
+        public async Task<UserDashboardDto> GetUserDashboardAsync()
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.GetAsync("user/dashboard");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<UserDashboardDto>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be logged in to access your dashboard.");
+            }
+
+            throw new Exception($"Failed to get user dashboard: {response.ReasonPhrase}");
+        }
+
+        public async Task<List<QuizAttemptDetailDto>> GetUserHistoryAsync()
+        {
+            EnsureAuthenticated();
+
+            var response = await _httpClient.GetAsync("user/history");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<List<QuizAttemptDetailDto>>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be logged in to access your history.");
+            }
+
+            throw new Exception($"Failed to get user history: {response.ReasonPhrase}");
+        }
+
+        // Admin-specific methods that will only be called from admin UI
+        public async Task<UserProfile> ResetUserPasswordAsync(string userId)
+        {
+            EnsureAuthenticated();
+
+            Console.WriteLine($"Resetting password for user {userId}");
+
+            var response = await _httpClient.PostAsync($"admin/users/{userId}/reset-password", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseJson);
+
+                // Show the temp password via Toast - in production you might want to display this more securely
+                Toast.MakeText(_context, $"Temporary password: {result["tempPassword"]}", ToastLength.Long).Show();
+
+                // Return the updated user
+                return await GetUserByIdAsync(userId);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to reset passwords.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to reset password: {errorContent}");
+        }
+
+        public async Task<byte[]> DownloadUserReportAsync()
+        {
+            EnsureAuthenticated();
+
+            Console.WriteLine("Downloading user report");
+
+            var response = await _httpClient.GetAsync("admin/users/report");
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to download user reports.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to download user report: {errorContent}");
+        }
+
+        // Enhanced update user method that supports all properties
+        public async Task<UserProfile> UpdateUserFullAsync(string userId, UpdateUserFullRequest request)
+        {
+            EnsureAuthenticated();
+
+            Console.WriteLine($"Updating user {userId} with full details");
+
+            var json = JsonConvert.SerializeObject(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync($"admin/users/{userId}", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Return the updated user
+                return await GetUserByIdAsync(userId);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to update users.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to update user: {errorContent}");
+        }
+
+        // Method to bulk delete users
+        public async Task<BulkDeleteResultDto> BulkDeleteUsersAsync(List<string> userIds)
+        {
+            EnsureAuthenticated();
+
+            Console.WriteLine($"Bulk deleting {userIds.Count} users");
+
+            var json = JsonConvert.SerializeObject(userIds);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("admin/users/bulk-delete", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<BulkDeleteResultDto>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to delete users.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to bulk delete users: {errorContent}");
         }
     }
 }

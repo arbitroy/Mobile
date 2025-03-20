@@ -4,86 +4,64 @@ using Newtonsoft.Json;
 
 namespace Mobile.Models
 {
-    // Admin Quiz Models
-    public class QuizAdmin
+    // Updated comprehensive user edit model
+    public class UpdateUserFullRequest
     {
         [JsonProperty("id")]
-        public int Id { get; set; }
+        public string Id { get; set; }
 
-        [JsonProperty("title")]
-        public string Title { get; set; }
+        [JsonProperty("userName")]
+        public string UserName { get; set; }
 
-        [JsonProperty("description")]
-        public string Description { get; set; }
-
-        [JsonProperty("timeLimit")]
-        public int TimeLimit { get; set; }
-
-        [JsonProperty("createdAt")]
-        public DateTime CreatedAt { get; set; }
-
-        [JsonProperty("questionCount")]
-        public int QuestionCount => Questions?.Count ?? 0;
-
-        [JsonProperty("questions")]
-        public List<QuestionAdmin> Questions { get; set; } = new List<QuestionAdmin>();
-    }
-
-    public class QuestionAdmin
-    {
-        [JsonProperty("id")]
-        public int Id { get; set; }
-
-        [JsonProperty("text")]
-        public string Text { get; set; }
-
-        [JsonProperty("options")]
-        public List<OptionAdmin> Options { get; set; } = new List<OptionAdmin>();
-    }
-
-    public class OptionAdmin
-    {
-        [JsonProperty("id")]
-        public int Id { get; set; }
-
-        [JsonProperty("text")]
-        public string Text { get; set; }
-
-        [JsonProperty("isCorrect")]
-        public bool IsCorrect { get; set; }
-    }
-
-    // Admin User Models
-    public class AdminCreateUserRequest
-    {
         [JsonProperty("email")]
         public string Email { get; set; }
 
-        [JsonProperty("password")]
-        public string Password { get; set; }
+        [JsonProperty("isAdmin")]
+        public bool IsAdmin { get; set; }
 
-        [JsonProperty("userName")]
-        public string UserName { get; set; }
-
-        [JsonProperty("roles")]
-        public List<string> Roles { get; set; } = new List<string>();
-    }
-
-    public class AdminUpdateUserRequest
-    {
-        [JsonProperty("userName")]
-        public string UserName { get; set; }
-
-        [JsonProperty("roles")]
-        public List<string> Roles { get; set; } = new List<string>();
-    }
-
-    public class AdminResetPasswordRequest
-    {
-        [JsonProperty("userId")]
-        public string UserId { get; set; }
+        [JsonProperty("setNewPassword")]
+        public bool SetNewPassword { get; set; }
 
         [JsonProperty("newPassword")]
         public string NewPassword { get; set; }
+    }
+
+    // Response for bulk user deletion
+    public class BulkDeleteResultDto
+    {
+        [JsonProperty("message")]
+        public string Message { get; set; }
+
+        [JsonProperty("successCount")]
+        public int SuccessCount { get; set; }
+
+        [JsonProperty("errorCount")]
+        public int ErrorCount { get; set; }
+
+        [JsonProperty("errors")]
+        public List<string> Errors { get; set; } = new List<string>();
+    }
+
+    // Response for admin password reset
+    public class PasswordResetResponseDto
+    {
+        [JsonProperty("message")]
+        public string Message { get; set; }
+
+        [JsonProperty("tempPassword")]
+        public string TempPassword { get; set; }
+    }
+
+    // User report data class for CSV generation
+    public class UserReportData
+    {
+        public string UserId { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Role { get; set; }
+        public string LastLoginTime { get; set; }
+        public int QuizAttempts { get; set; }
+        public double AverageScore { get; set; }
+        public string IsEmailConfirmed { get; set; }
     }
 }

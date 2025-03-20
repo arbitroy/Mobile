@@ -69,12 +69,16 @@
     <Compile Include="Activities\AdminUserListActivity.cs" />
     <Compile Include="Activities\BaseAuthenticatedActivity.cs" />
     <Compile Include="Activities\DashboardActivity.cs" />
+    <Compile Include="Activities\ForgotPasswordActivity.cs" />
     <Compile Include="Activities\MainActivity.cs" />
     <Compile Include="Activities\QuizDetailActivity.cs" />
+    <Compile Include="Activities\QuizHistoryActivity.cs" />
     <Compile Include="Activities\QuizListActivity.cs" />
     <Compile Include="Activities\QuizResultActivity.cs" />
     <Compile Include="Activities\RegisterActivity.cs" />
+    <Compile Include="Activities\ResetPasswordActivity.cs" />
     <Compile Include="Activities\TakeQuizActivity.cs" />
+    <Compile Include="Activities\UserDashboardActivity.cs" />
     <Compile Include="Activities\UserProfileActivity.cs" />
     <Compile Include="Models\AdminModels.cs" />
     <Compile Include="Models\AdminStats.cs" />
@@ -82,10 +86,12 @@
     <Compile Include="Models\ErrorResponse.cs" />
     <Compile Include="Models\LoginRequest.cs" />
     <Compile Include="Models\Quiz.cs" />
+    <Compile Include="Models\QuizAdminModels.cs" />
     <Compile Include="Models\QuizDetail.cs" />
     <Compile Include="Models\QuizResult.cs" />
     <Compile Include="Models\QuizSubmission.cs" />
     <Compile Include="Models\RegisterRequest.cs" />
+    <Compile Include="Models\UserAdminModels.cs" />
     <Compile Include="Models\UserProfile.cs" />
     <Compile Include="Models\UserStats.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
@@ -200,6 +206,22 @@
     <AndroidResource Include="Resources\layout\layout_admin_activity_item.xml" />
     <AndroidResource Include="Resources\layout\layout_admin_quiz_item.xml" />
     <AndroidResource Include="Resources\layout\layout_admin_user_list_item.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\activity_forgot_password.xml" />
+    <AndroidResource Include="Resources\layout\activity_reset_password.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\activity_user_dashboard.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\layout_recommended_quiz_item.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\activity_quiz_history.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\layout_history_item.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
