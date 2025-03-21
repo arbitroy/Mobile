@@ -15,7 +15,7 @@ namespace Mobile.Activities
         private Button _loginButton;
         private TextView _registerLinkTextView;
         private ApiService _apiService;
-        private TextView _forgotPasswordLink;
+        private TextView _forgotPasswordLinkTextView;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -29,7 +29,7 @@ namespace Mobile.Activities
             _passwordEditText = FindViewById<EditText>(Resource.Id.passwordEditText);
             _loginButton = FindViewById<Button>(Resource.Id.loginButton);
             _registerLinkTextView = FindViewById<TextView>(Resource.Id.registerLinkTextView);
-            _forgotPasswordLink = FindViewById<TextView>(Resource.Id.forgotPasswordLinkTextView);
+            _forgotPasswordLinkTextView = FindViewById<TextView>(Resource.Id.forgotPasswordLinkTextView);
 
 
             // Initialize service with context
@@ -47,6 +47,7 @@ namespace Mobile.Activities
             // Set up event handlers
             _loginButton.Click += OnLoginButtonClick;
             _registerLinkTextView.Click += OnRegisterLinkClick;
+            _forgotPasswordLinkTextView.Click += OnForgotPasswordLinkClick;
         }
 
         private async void OnLoginButtonClick(object sender, EventArgs e)

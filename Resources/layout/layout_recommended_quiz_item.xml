@@ -60,6 +60,7 @@
             android:layout_height="wrap_content"
             android:text="View Quiz"
             android:textColor="#FFFFFF"
-            android:background="@drawable/button_background"/>
+            android:background="@drawable/button_background"
+            android:backgroundTint="#4361ee"/>
 	</LinearLayout>
 </androidx.cardview.widget.CardView>

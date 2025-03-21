@@ -121,8 +121,8 @@ namespace Mobile.Activities
 
         private void OnDoneButtonClick(object sender, EventArgs e)
         {
-            // Navigate back to quiz list
-            var intent = new Intent(this, typeof(DashboardActivity));
+            // Navigate back to the new user dashboard
+            var intent = new Intent(this, typeof(UserDashboardActivity));
             intent.SetFlags(ActivityFlags.ClearTop); // Clear back stack
             StartActivity(intent);
             Finish();

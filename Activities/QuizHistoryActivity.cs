@@ -136,8 +136,8 @@ namespace Mobile.Activities
                     viewHolder.ScoreTextView.SetTextColor(Android.Graphics.Color.ParseColor("#F44336")); // Red
                 }
 
-                // Set up event handler for item click
-                viewHolder.ItemView.Click += (sender, e) => {
+                // Set up event handler for the View Details button
+                viewHolder.ViewDetailsButton.Click += (sender, e) => {
                     // Navigate to quiz result activity
                     var intent = new Intent(_activity, typeof(QuizResultActivity));
                     intent.PutExtra("AttemptId", item.AttemptId);
@@ -154,6 +154,7 @@ namespace Mobile.Activities
                 public TextView DateTextView { get; }
                 public TextView DurationTextView { get; }
                 public TextView ScoreTextView { get; }
+                public Button ViewDetailsButton { get; }
 
                 public HistoryViewHolder(View itemView) : base(itemView)
                 {
@@ -161,6 +162,7 @@ namespace Mobile.Activities
                     DateTextView = itemView.FindViewById<TextView>(Resource.Id.dateTextView);
                     DurationTextView = itemView.FindViewById<TextView>(Resource.Id.durationTextView);
                     ScoreTextView = itemView.FindViewById<TextView>(Resource.Id.scoreTextView);
+                    ViewDetailsButton = itemView.FindViewById<Button>(Resource.Id.viewDetailsButton);
                 }
             }
         }

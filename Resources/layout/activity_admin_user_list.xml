@@ -33,11 +33,12 @@
 	</LinearLayout>
 
 	<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:layout_marginHorizontal="16dp"
-    android:layout_marginBottom="16dp">
+        android:id="@+id/actionButtonsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/headerLayout"
+        android:padding="16dp">
 
 		<Button
 			android:id="@+id/downloadReportButton"
@@ -53,7 +54,7 @@
         android:id="@+id/userRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/headerLayout"
+        android:layout_below="@id/actionButtonsLayout"
         android:layout_above="@id/createUserButton"
         android:padding="8dp"
         android:clipToPadding="false"/>

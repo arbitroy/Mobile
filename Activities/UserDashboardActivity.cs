@@ -25,9 +25,23 @@ namespace Mobile.Activities
         private Button _browseQuizzesButton;
         private Button _historyButton;
         private Button _profileButton;
+        private Button _adminDashboardButton;
         private ProgressBar _loadingProgressBar;
         private TextView _emptyAttemptsTextView;
         private TextView _emptyRecommendedTextView;
+
+        protected override void OnRolesLoaded()
+        {
+            // Show/hide admin dashboard button based on role
+            RunOnUiThread(() => {
+                if (_adminDashboardButton != null)
+                {
+                    _adminDashboardButton.Visibility = IsAdmin ?
+                        ViewStates.Visible :
+                        ViewStates.Gone;
+                }
+            });
+        }
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -46,6 +60,7 @@ namespace Mobile.Activities
             _browseQuizzesButton = FindViewById<Button>(Resource.Id.browseQuizzesButton);
             _historyButton = FindViewById<Button>(Resource.Id.historyButton);
             _profileButton = FindViewById<Button>(Resource.Id.profileButton);
+            _adminDashboardButton = FindViewById<Button>(Resource.Id.adminDashboardButton);
             _loadingProgressBar = FindViewById<ProgressBar>(Resource.Id.loadingProgressBar);
             _emptyAttemptsTextView = FindViewById<TextView>(Resource.Id.emptyAttemptsTextView);
             _emptyRecommendedTextView = FindViewById<TextView>(Resource.Id.emptyRecommendedTextView);
@@ -65,6 +80,7 @@ namespace Mobile.Activities
             _browseQuizzesButton.Click += OnBrowseQuizzesButtonClick;
             _historyButton.Click += OnHistoryButtonClick;
             _profileButton.Click += OnProfileButtonClick;
+            _adminDashboardButton.Click += OnAdminDashboardButtonClick;
         }
 
         private async void LoadDashboardAsync()
@@ -157,6 +173,13 @@ namespace Mobile.Activities
         {
             // Navigate to user profile activity
             var intent = new Intent(this, typeof(UserProfileActivity));
+            StartActivity(intent);
+        }
+
+        private void OnAdminDashboardButtonClick(object sender, EventArgs e)
+        {
+            // Navigate to admin dashboard
+            var intent = new Intent(this, typeof(AdminDashboardActivity));
             StartActivity(intent);
         }
 
@@ -273,8 +296,8 @@ namespace Mobile.Activities
                 // Set time limit
                 viewHolder.TimeLimitTextView.Text = $"{quiz.TimeLimit} min";
 
-                // Set up event handler for item click
-                viewHolder.ItemView.Click += (sender, e) => {
+                // Set up event handler for the "View Quiz" button
+                viewHolder.StartQuizButton.Click += (sender, e) => {
                     // Navigate to quiz detail activity
                     var intent = new Intent(_activity, typeof(QuizDetailActivity));
                     intent.PutExtra("QuizId", quiz.Id);
@@ -292,6 +315,7 @@ namespace Mobile.Activities
                 public TextView DescriptionTextView { get; }
                 public TextView QuestionCountTextView { get; }
                 public TextView TimeLimitTextView { get; }
+                public Button StartQuizButton { get; }
 
                 public QuizViewHolder(View itemView) : base(itemView)
                 {
@@ -299,6 +323,7 @@ namespace Mobile.Activities
                     DescriptionTextView = itemView.FindViewById<TextView>(Resource.Id.descriptionTextView);
                     QuestionCountTextView = itemView.FindViewById<TextView>(Resource.Id.questionCountTextView);
                     TimeLimitTextView = itemView.FindViewById<TextView>(Resource.Id.timeLimitTextView);
+                    StartQuizButton = itemView.FindViewById<Button>(Resource.Id.startQuizButton);
                 }
             }
         }
