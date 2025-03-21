@@ -4,14 +4,17 @@ using Android.Widget;
 using System;
 using System.Text.RegularExpressions;
 using Mobile.Services;
+using Mobile.Models;
 using Android.Content;
 
 namespace Mobile.Activities
 {
-    [Activity(Label = "Forgot Password")]
+    [Activity(Label = "Reset Password")]
     public class ForgotPasswordActivity : Activity
     {
         private EditText _emailEditText;
+        private EditText _newPasswordEditText;
+        private EditText _confirmPasswordEditText;
         private Button _resetButton;
         private TextView _loginLinkTextView;
         private ProgressBar _loadingProgressBar;
@@ -26,6 +29,8 @@ namespace Mobile.Activities
 
             // Initialize UI elements
             _emailEditText = FindViewById<EditText>(Resource.Id.emailEditText);
+            _newPasswordEditText = FindViewById<EditText>(Resource.Id.newPasswordEditText);
+            _confirmPasswordEditText = FindViewById<EditText>(Resource.Id.confirmPasswordEditText);
             _resetButton = FindViewById<Button>(Resource.Id.resetButton);
             _loginLinkTextView = FindViewById<TextView>(Resource.Id.loginLinkTextView);
             _loadingProgressBar = FindViewById<ProgressBar>(Resource.Id.loadingProgressBar);
@@ -42,10 +47,12 @@ namespace Mobile.Activities
         {
             try
             {
-                // Get email
+                // Get input values
                 string email = _emailEditText.Text?.Trim();
+                string newPassword = _newPasswordEditText.Text;
+                string confirmPassword = _confirmPasswordEditText.Text;
 
-                // Validate email
+                // Validate inputs
                 if (string.IsNullOrEmpty(email))
                 {
                     Toast.MakeText(this, "Please enter your email address", ToastLength.Short).Show();
@@ -58,37 +65,57 @@ namespace Mobile.Activities
                     return;
                 }
 
+                if (string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+                {
+                    Toast.MakeText(this, "Please enter your new password", ToastLength.Short).Show();
+                    return;
+                }
+
+                if (newPassword != confirmPassword)
+                {
+                    Toast.MakeText(this, "Passwords do not match", ToastLength.Short).Show();
+                    return;
+                }
+
+                if (!IsValidPassword(newPassword))
+                {
+                    Toast.MakeText(this, "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character", ToastLength.Long).Show();
+                    return;
+                }
+
                 // Show loading indicator
                 _loadingProgressBar.Visibility = Android.Views.ViewStates.Visible;
                 _resetButton.Enabled = false;
 
-                // Send password reset request
-                bool success = await _apiService.ForgotPasswordAsync(email);
-
-                if (success)
+                try
                 {
-                    // Show success message and navigate to reset password screen
-                    Toast.MakeText(this, "Reset instructions have been sent to your email", ToastLength.Long).Show();
+                    // Call API to reset password directly
+                    bool success = await _apiService.DirectResetPasswordAsync(email, newPassword);
 
-                    var intent = new Intent(this, typeof(ResetPasswordActivity));
-                    intent.PutExtra("Email", email);
-                    StartActivity(intent);
-                    Finish();
+                    if (success)
+                    {
+                        // Show success message and navigate to login
+                        Toast.MakeText(this, "Password has been reset successfully. You can now log in with your new password.", ToastLength.Long).Show();
+
+                        var intent = new Intent(this, typeof(MainActivity));
+                        StartActivity(intent);
+                        Finish();
+                    }
+                    else
+                    {
+                        Toast.MakeText(this, "Failed to reset password. Please check your email and try again.", ToastLength.Long).Show();
+                    }
                 }
-                else
+                finally
                 {
-                    Toast.MakeText(this, "Password reset request failed", ToastLength.Long).Show();
+                    // Hide loading indicator
+                    _loadingProgressBar.Visibility = Android.Views.ViewStates.Gone;
+                    _resetButton.Enabled = true;
                 }
             }
             catch (Exception ex)
             {
                 Toast.MakeText(this, $"Error: {ex.Message}", ToastLength.Long).Show();
-            }
-            finally
-            {
-                // Hide loading indicator
-                _loadingProgressBar.Visibility = Android.Views.ViewStates.Gone;
-                _resetButton.Enabled = true;
             }
         }
 
@@ -110,6 +137,31 @@ namespace Mobile.Activities
             {
                 return false;
             }
+        }
+
+        private bool IsValidPassword(string password)
+        {
+            // Check minimum length
+            if (string.IsNullOrEmpty(password) || password.Length < 8)
+                return false;
+
+            // Check for uppercase letter
+            if (!Regex.IsMatch(password, @"[A-Z]"))
+                return false;
+
+            // Check for lowercase letter
+            if (!Regex.IsMatch(password, @"[a-z]"))
+                return false;
+
+            // Check for digit
+            if (!Regex.IsMatch(password, @"[0-9]"))
+                return false;
+
+            // Check for special character
+            if (!Regex.IsMatch(password, @"[^a-zA-Z0-9]"))
+                return false;
+
+            return true;
         }
     }
 }

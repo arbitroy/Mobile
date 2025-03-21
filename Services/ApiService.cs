@@ -1174,5 +1174,75 @@ namespace Mobile.Services
             var errorContent = await response.Content.ReadAsStringAsync();
             throw new Exception($"Failed to bulk delete users: {errorContent}");
         }
+
+        public async Task<bool> DirectResetPasswordAsync(string email, string newPassword)
+        {
+            // This doesn't require authentication
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+
+            Console.WriteLine($"Directly resetting password for {email}");
+
+            // For simplicity, we'll use the ResetPasswordRequest but generate a dummy code
+            // In a real implementation, you would create a dedicated endpoint on the server
+            var dummyCode = "DIRECT_RESET_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+
+            var requestData = new ResetPasswordRequest
+            {
+                Email = email,
+                Code = dummyCode, // Server will ignore this and generate its own
+                Password = newPassword,
+                ConfirmPassword = newPassword
+            };
+
+            var json = JsonConvert.SerializeObject(requestData);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            try
+            {
+                // Use the existing reset endpoint
+                var response = await _httpClient.PostAsync("auth/reset-password", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Password reset success: {responseContent}");
+                    return true;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Password reset error: {errorContent}");
+
+                    // Try to extract a meaningful error message
+                    try
+                    {
+                        var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(errorContent);
+                        if (errorResponse != null && !string.IsNullOrEmpty(errorResponse.Message))
+                        {
+                            throw new Exception(errorResponse.Message);
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        // If we can't parse the JSON, just use the raw content
+                    }
+
+                    throw new Exception($"Password reset failed: {errorContent}");
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                throw new Exception("The request timed out. Please check your internet connection and try again.");
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new Exception($"Network error while resetting password: {httpEx.Message}", httpEx);
+            }
+            catch (Exception ex) when (!(ex is ArgumentException || ex is ArgumentNullException))
+            {
+                Console.WriteLine($"Unexpected error in DirectResetPasswordAsync: {ex}");
+                throw new Exception($"Error resetting password: {ex.Message}", ex);
+            }
+        }
     }
 }

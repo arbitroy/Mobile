@@ -35,6 +35,7 @@ namespace Mobile.Activities
             // Initialize service with context
             _apiService = new ApiService(this);
 
+
             // Check if token exists and skip login if it does
             string token = TokenManager.GetToken(this);
             if (!string.IsNullOrEmpty(token))
