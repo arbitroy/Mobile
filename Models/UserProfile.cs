@@ -18,6 +18,7 @@ namespace Mobile.Models
     public class ProfileUpdateRequest
     {
         public string UserName { get; set; }
+        public string Email { get; set; }  // Add this property
     }
 
     public class PasswordChangeRequest

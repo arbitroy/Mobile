@@ -512,14 +512,17 @@ namespace Mobile.Services
             EnsureAuthenticated();
 
             var json = JsonConvert.SerializeObject(updateRequest);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            Console.WriteLine($"Sending profile update request: {json}");
 
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync("user/profile", content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Profile update response: {responseContent}");
 
             if (response.IsSuccessStatusCode)
             {
-                var responseJson = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<UserProfile>(responseJson);
+                return JsonConvert.DeserializeObject<UserProfile>(responseContent);
             }
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -527,8 +530,7 @@ namespace Mobile.Services
                 throw new UnauthorizedAccessException("You must be logged in to update your profile.");
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Failed to update profile: {errorContent}");
+            throw new Exception($"Failed to update profile: {responseContent}");
         }
 
         public async Task ChangePasswordAsync(PasswordChangeRequest passwordChangeRequest)

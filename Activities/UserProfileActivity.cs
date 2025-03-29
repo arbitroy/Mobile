@@ -130,7 +130,8 @@ namespace Mobile.Activities
                     // Create profile update request
                     var updateRequest = new ProfileUpdateRequest
                     {
-                        UserName = updatedUsername
+                        UserName = updatedUsername,
+                        Email = _userProfile.Email  // Include the current email
                     };
 
                     // Update profile via API
