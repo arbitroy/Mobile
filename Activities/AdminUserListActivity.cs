@@ -10,6 +10,9 @@ using AndroidX.RecyclerView.Widget;
 using Android.Views;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using Android.Support.V4.Content;
+using AndroidX.Core.Content;
 
 namespace Mobile.Activities
 {
@@ -24,6 +27,15 @@ namespace Mobile.Activities
         private List<UserProfile> _users;
         private AdminUserAdapter _adapter;
         private Button _downloadReportButton;
+        private Button _bulkDeleteButton;
+        private Button _selectAllButton;
+        private Button _cancelSelectionButton;
+
+        // Flag to indicate if we're in bulk selection mode
+        private bool _isInSelectionMode = false;
+
+        // Set of selected user IDs for bulk operations
+        private HashSet<string> _selectedUserIds = new HashSet<string>();
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -39,10 +51,9 @@ namespace Mobile.Activities
             _createUserButton = FindViewById<Button>(Resource.Id.createUserButton);
             _searchView = FindViewById<SearchView>(Resource.Id.searchView);
             _downloadReportButton = FindViewById<Button>(Resource.Id.downloadReportButton);
-            if (_downloadReportButton != null)
-            {
-                _downloadReportButton.Click += OnDownloadReportButtonClick;
-            }
+            _bulkDeleteButton = FindViewById<Button>(Resource.Id.bulkDeleteButton);
+            _selectAllButton = FindViewById<Button>(Resource.Id.selectAllButton);
+            _cancelSelectionButton = FindViewById<Button>(Resource.Id.cancelSelectionButton);
 
             // Set up RecyclerView
             _userRecyclerView.SetLayoutManager(new LinearLayoutManager(this));
@@ -50,6 +61,29 @@ namespace Mobile.Activities
             // Set up event handlers
             _createUserButton.Click += OnCreateUserButtonClick;
             _searchView.QueryTextChange += OnSearchQueryTextChange;
+
+            if (_downloadReportButton != null)
+            {
+                _downloadReportButton.Click += OnDownloadReportButtonClick;
+            }
+
+            if (_bulkDeleteButton != null)
+            {
+                _bulkDeleteButton.Click += OnBulkDeleteButtonClick;
+            }
+
+            if (_selectAllButton != null)
+            {
+                _selectAllButton.Click += OnSelectAllButtonClick;
+            }
+
+            if (_cancelSelectionButton != null)
+            {
+                _cancelSelectionButton.Click += OnCancelSelectionButtonClick;
+            }
+
+            // Initialize selection mode UI state
+            UpdateSelectionModeUI(false);
 
             // Load users
             LoadUsersAsync();
@@ -119,6 +153,80 @@ namespace Mobile.Activities
             }
         }
 
+        // Toggle selection mode
+        private void EnterSelectionMode()
+        {
+            _isInSelectionMode = true;
+            _selectedUserIds.Clear();
+            UpdateSelectionModeUI(true);
+            _adapter?.NotifyDataSetChanged();
+        }
+
+        private void ExitSelectionMode()
+        {
+            _isInSelectionMode = false;
+            _selectedUserIds.Clear();
+            UpdateSelectionModeUI(false);
+            _adapter?.NotifyDataSetChanged();
+        }
+
+        // Update UI based on selection mode
+        private void UpdateSelectionModeUI(bool selectionMode)
+        {
+            if (_bulkDeleteButton != null)
+            {
+                _bulkDeleteButton.Visibility = selectionMode ? ViewStates.Visible : ViewStates.Gone;
+            }
+
+            if (_selectAllButton != null)
+            {
+                _selectAllButton.Visibility = selectionMode ? ViewStates.Visible : ViewStates.Gone;
+            }
+
+            if (_cancelSelectionButton != null)
+            {
+                _cancelSelectionButton.Visibility = selectionMode ? ViewStates.Visible : ViewStates.Gone;
+            }
+
+            if (_createUserButton != null)
+            {
+                _createUserButton.Visibility = selectionMode ? ViewStates.Gone : ViewStates.Visible;
+            }
+
+            // Update action bar title
+            if (selectionMode)
+            {
+                Title = $"Select Users ({_selectedUserIds.Count})";
+            }
+            else
+            {
+                Title = "Manage Users";
+            }
+        }
+
+        // Toggle user selection and update UI
+        public void ToggleUserSelection(string userId)
+        {
+            if (_selectedUserIds.Contains(userId))
+            {
+                _selectedUserIds.Remove(userId);
+            }
+            else
+            {
+                _selectedUserIds.Add(userId);
+            }
+
+            // Update title to show selected count
+            Title = $"Select Users ({_selectedUserIds.Count})";
+
+            // Update bulk delete button state
+            if (_bulkDeleteButton != null)
+            {
+                _bulkDeleteButton.Enabled = _selectedUserIds.Count > 0;
+                _bulkDeleteButton.Alpha = _selectedUserIds.Count > 0 ? 1.0f : 0.5f;
+            }
+        }
+
         private void OnCreateUserButtonClick(object sender, EventArgs e)
         {
             // Navigate to create user activity
@@ -135,6 +243,110 @@ namespace Mobile.Activities
             }
         }
 
+        private void OnSelectAllButtonClick(object sender, EventArgs e)
+        {
+            // Reset selection
+            _selectedUserIds.Clear();
+
+            // Get all valid user IDs (non-admin, non-self)
+            string currentUserId = TokenManager.GetUserId(this);
+
+            foreach (var user in _adapter.GetFilteredUsers())
+            {
+                bool isAdmin = user.Roles.Contains("Administrator");
+                bool isSelf = user.Id == currentUserId;
+
+                // Skip admins and self
+                if (!isAdmin && !isSelf)
+                {
+                    _selectedUserIds.Add(user.Id);
+                }
+            }
+
+            // Update UI
+            Title = $"Select Users ({_selectedUserIds.Count})";
+
+            // Update bulk delete button state
+            if (_bulkDeleteButton != null)
+            {
+                _bulkDeleteButton.Enabled = _selectedUserIds.Count > 0;
+                _bulkDeleteButton.Alpha = _selectedUserIds.Count > 0 ? 1.0f : 0.5f;
+            }
+
+            _adapter?.NotifyDataSetChanged();
+        }
+
+        private void OnCancelSelectionButtonClick(object sender, EventArgs e)
+        {
+            // Exit selection mode
+            ExitSelectionMode();
+        }
+
+        private async void OnBulkDeleteButtonClick(object sender, EventArgs e)
+        {
+            if (_selectedUserIds.Count == 0)
+            {
+                Toast.MakeText(this, "No users selected", ToastLength.Short).Show();
+                return;
+            }
+
+            // Confirm deletion
+            var builder = new AlertDialog.Builder(this);
+            builder.SetTitle("Bulk Delete Users");
+            builder.SetMessage($"Are you sure you want to delete {_selectedUserIds.Count} users? This action cannot be undone.");
+            builder.SetPositiveButton("Delete", async (dialog, which) =>
+            {
+                await ExecuteBulkDeleteAsync();
+            });
+            builder.SetNegativeButton("Cancel", (dialog, which) => { });
+            builder.Show();
+        }
+
+        private async Task ExecuteBulkDeleteAsync()
+        {
+            try
+            {
+                // Show loading indicator
+                _loadingProgressBar.Visibility = ViewStates.Visible;
+                _bulkDeleteButton.Enabled = false;
+
+                // Call API to bulk delete users
+                var result = await ApiService.BulkDeleteUsersAsync(_selectedUserIds.ToList());
+
+                // Show result
+                string message = $"Successfully deleted {result.SuccessCount} users";
+                if (result.ErrorCount > 0)
+                {
+                    message += $", {result.ErrorCount} failed";
+                }
+                Toast.MakeText(this, message, ToastLength.Long).Show();
+
+                // Exit selection mode
+                ExitSelectionMode();
+
+                // Reload users list
+                await Task.Delay(500);  // Short delay to ensure backend syncs
+                LoadUsersAsync();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                HandleAuthError();
+            }
+            catch (Exception ex)
+            {
+                Toast.MakeText(this, $"Failed to delete users: {ex.Message}", ToastLength.Long).Show();
+            }
+            finally
+            {
+                // Hide loading indicator
+                _loadingProgressBar.Visibility = ViewStates.Gone;
+                if (_bulkDeleteButton != null)
+                {
+                    _bulkDeleteButton.Enabled = true;
+                }
+            }
+        }
+
         private async void OnDownloadReportButtonClick(object sender, EventArgs e)
         {
             try
@@ -146,13 +358,69 @@ namespace Mobile.Activities
                 // Download report
                 byte[] reportData = await ApiService.DownloadUserReportAsync();
 
+                // Create filename with timestamp
+                string fileName = $"user-report-{DateTime.Now:yyyyMMdd-HHmmss}.csv";
+
                 // Save to file in Downloads folder
-                string fileName = $"user-report-{DateTime.Now:yyyyMMdd}.csv";
-                string filePath = System.IO.Path.Combine(Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads).AbsolutePath, fileName);
+                string filePath = Path.Combine(Android.OS.Environment.GetExternalStoragePublicDirectory(
+                    Android.OS.Environment.DirectoryDownloads).AbsolutePath, fileName);
 
-                System.IO.File.WriteAllBytes(filePath, reportData);
+                File.WriteAllBytes(filePath, reportData);
 
-                Toast.MakeText(this, $"Report downloaded to {filePath}", ToastLength.Long).Show();
+                // Create a File object for the saved report
+                Java.IO.File reportFile = new Java.IO.File(filePath);
+
+                // Create a content URI using FileProvider to securely share the file
+                string authority = Application.Context.PackageName + ".fileprovider";
+                Android.Net.Uri fileUri = null;
+
+                try
+                {
+                    fileUri = AndroidX.Core.Content.FileProvider.GetUriForFile(this, authority, reportFile);
+                }
+                catch (Java.Lang.IllegalArgumentException ex)
+                {
+                    Console.WriteLine($"Error getting URI for file: {ex.Message}");
+                    // Fallback to direct file URI - less secure but might work in some cases
+                    fileUri = Android.Net.Uri.FromFile(reportFile);
+                }
+
+                if (fileUri != null)
+                {
+                    // First try to find apps that can handle CSV files
+                    Intent viewIntent = new Intent(Intent.ActionView);
+                    viewIntent.SetDataAndType(fileUri, "text/csv");
+                    viewIntent.SetFlags(ActivityFlags.GrantReadUriPermission);
+
+                    // Check if there's an app that can handle CSV files
+                    if (viewIntent.ResolveActivity(PackageManager) != null)
+                    {
+                        // Start the activity to let the user choose which app to open the CSV with
+                        StartActivity(Intent.CreateChooser(viewIntent, "Open CSV with..."));
+                    }
+                    else
+                    {
+                        // No CSV handler found, try generic text viewing
+                        viewIntent.SetDataAndType(fileUri, "text/plain");
+
+                        if (viewIntent.ResolveActivity(PackageManager) != null)
+                        {
+                            StartActivity(Intent.CreateChooser(viewIntent, "Open Report with..."));
+                        }
+                        else
+                        {
+                            // No suitable app found, show in our own viewer
+                            ShowReportInAppViewer(reportData, fileName);
+                        }
+                    }
+                }
+                else
+                {
+                    // If URI creation failed, show in our own viewer
+                    ShowReportInAppViewer(reportData, fileName);
+                }
+
+                Toast.MakeText(this, $"Report downloaded to Downloads/{fileName}", ToastLength.Long).Show();
             }
             catch (UnauthorizedAccessException)
             {
@@ -169,6 +437,22 @@ namespace Mobile.Activities
                 _loadingProgressBar.Visibility = ViewStates.Gone;
                 _downloadReportButton.Enabled = true;
             }
+        }
+
+        private void ShowReportInAppViewer(byte[] reportData, string fileName)
+        {
+            // Create an intent to show the report in our own viewer activity
+            Intent viewerIntent = new Intent(this, typeof(ReportViewerActivity));
+
+            // Save the data to a temporary file
+            string tempPath = Path.Combine(CacheDir.AbsolutePath, fileName);
+            File.WriteAllBytes(tempPath, reportData);
+
+            // Pass the file path to the viewer activity
+            viewerIntent.PutExtra("FilePath", tempPath);
+            viewerIntent.PutExtra("FileName", fileName);
+
+            StartActivity(viewerIntent);
         }
 
         private async Task<bool> DeleteUserAsync(string userId)
@@ -215,6 +499,15 @@ namespace Mobile.Activities
             RedirectToLogin();
         }
 
+        // Handle long press on user list item
+        public void OnUserItemLongClick()
+        {
+            if (!_isInSelectionMode)
+            {
+                EnterSelectionMode();
+            }
+        }
+
         // RecyclerView adapter for users
         private class AdminUserAdapter : RecyclerView.Adapter
         {
@@ -250,9 +543,23 @@ namespace Mobile.Activities
                 string currentUserId = TokenManager.GetUserId(_activity);
                 bool isCurrentUser = user.Id == currentUserId;
 
+                // Set selection checkbox state
+                if (viewHolder.SelectCheckBox != null)
+                {
+                    viewHolder.SelectCheckBox.Visibility = _activity._isInSelectionMode ? ViewStates.Visible : ViewStates.Gone;
+                    viewHolder.SelectCheckBox.Checked = _activity._selectedUserIds.Contains(user.Id);
+
+                    // Disable checkbox for admins and self
+                    viewHolder.SelectCheckBox.Enabled = !(user.Roles.Contains("Administrator") || isCurrentUser);
+                }
+
                 // Handle deletion restrictions for current user and admins
                 bool isAdmin = user.Roles.Contains("Administrator");
                 viewHolder.DeleteButton.Enabled = !isCurrentUser && !isAdmin;
+                viewHolder.DeleteButton.Visibility = _activity._isInSelectionMode ? ViewStates.Gone : ViewStates.Visible;
+
+                // Set button visibility based on selection mode
+                viewHolder.EditButton.Visibility = _activity._isInSelectionMode ? ViewStates.Gone : ViewStates.Visible;
 
                 if (!viewHolder.DeleteButton.Enabled)
                 {
@@ -322,9 +629,65 @@ namespace Mobile.Activities
                     });
                     alertDialog.Show();
                 };
+
+                // Set up click and long click handlers for the item view
+                viewHolder.ItemView.Click += (sender, e) =>
+                {
+                    if (_activity._isInSelectionMode)
+                    {
+                        // Toggle selection if user is not admin or self
+                        bool isAdmin = user.Roles.Contains("Administrator");
+                        bool isCurrentUser = user.Id == currentUserId;
+
+                        if (!isAdmin && !isCurrentUser)
+                        {
+                            _activity.ToggleUserSelection(user.Id);
+                            NotifyItemChanged(position);
+                        }
+                        else if (isAdmin)
+                        {
+                            Toast.MakeText(_activity, "Admin users cannot be selected for bulk operations", ToastLength.Short).Show();
+                        }
+                        else if (isCurrentUser)
+                        {
+                            Toast.MakeText(_activity, "You cannot select your own account", ToastLength.Short).Show();
+                        }
+                    }
+                };
+
+                viewHolder.ItemView.LongClick += (sender, e) =>
+                {
+                    _activity.OnUserItemLongClick();
+
+                    // If the user is not admin or self, select it on entering selection mode
+                    bool isAdmin = user.Roles.Contains("Administrator");
+                    bool isCurrentUser = user.Id == currentUserId;
+
+                    if (!isAdmin && !isCurrentUser)
+                    {
+                        _activity.ToggleUserSelection(user.Id);
+                        NotifyItemChanged(position);
+                    }
+                };
+
+                // Set up checkbox click handler
+                if (viewHolder.SelectCheckBox != null)
+                {
+                    viewHolder.SelectCheckBox.Click += (sender, e) =>
+                    {
+                        _activity.ToggleUserSelection(user.Id);
+                        // No need to call NotifyItemChanged here as the checkbox state is already updated
+                    };
+                }
             }
 
             public override int ItemCount => _filteredUsers.Count;
+
+            // Return the filtered users list for Select All feature
+            public List<UserProfile> GetFilteredUsers()
+            {
+                return _filteredUsers;
+            }
 
             public void Filter(string query)
             {
@@ -366,6 +729,7 @@ namespace Mobile.Activities
                 public TextView QuizCountTextView { get; }
                 public Button EditButton { get; }
                 public Button DeleteButton { get; }
+                public CheckBox SelectCheckBox { get; }
 
                 public UserViewHolder(View itemView) : base(itemView)
                 {
@@ -375,6 +739,7 @@ namespace Mobile.Activities
                     QuizCountTextView = itemView.FindViewById<TextView>(Resource.Id.quizCountTextView);
                     EditButton = itemView.FindViewById<Button>(Resource.Id.editButton);
                     DeleteButton = itemView.FindViewById<Button>(Resource.Id.deleteButton);
+                    SelectCheckBox = itemView.FindViewById<CheckBox>(Resource.Id.selectCheckBox);
                 }
             }
         }

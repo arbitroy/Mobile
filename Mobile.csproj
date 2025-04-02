@@ -76,6 +76,7 @@
     <Compile Include="Activities\QuizListActivity.cs" />
     <Compile Include="Activities\QuizResultActivity.cs" />
     <Compile Include="Activities\RegisterActivity.cs" />
+    <Compile Include="Activities\ReportViewerActivity.cs" />
     <Compile Include="Activities\ResetPasswordActivity.cs" />
     <Compile Include="Activities\TakeQuizActivity.cs" />
     <Compile Include="Activities\UserDashboardActivity.cs" />
@@ -222,6 +223,12 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\layout_history_item.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\activity_report_viewer.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\file_provider_paths.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

@@ -982,6 +982,32 @@ namespace Mobile.Services
             throw new Exception($"Failed to delete user: {responseContent}");
         }
 
+        public async Task<BulkDeleteResultDto> BulkDeleteUsersAsync(List<string> userIds)
+        {
+            EnsureAuthenticated();
+
+            Console.WriteLine($"Bulk deleting {userIds.Count} users");
+
+            var json = JsonConvert.SerializeObject(userIds);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("admin/users/bulk-delete", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<BulkDeleteResultDto>(responseJson);
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new UnauthorizedAccessException("You must be an administrator to delete users.");
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to bulk delete users: {errorContent}");
+        }
+
         // Note: There is no reset password endpoint in the API, so this would need to be implemented
         // on the server side. This is a placeholder implementation that will throw an error.
         public async Task<bool> ForgotPasswordAsync(string email)
@@ -1124,16 +1150,21 @@ namespace Mobile.Services
         }
 
         // Enhanced update user method that supports all properties
-        public async Task<UserProfile> UpdateUserFullAsync(string userId, UpdateUserFullRequest request)
+       public async Task<UserProfile> UpdateUserFullAsync(string userId, UpdateUserFullRequest request)
         {
             EnsureAuthenticated();
 
             Console.WriteLine($"Updating user {userId} with full details");
+            Console.WriteLine($"Username: {request.UserName}, Email: {request.Email}, IsAdmin: {request.IsAdmin}");
 
             var json = JsonConvert.SerializeObject(request);
+            Console.WriteLine($"JSON payload: {json}");
+
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PutAsync($"admin/users/{userId}", content);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Server response: {responseContent}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -1146,35 +1177,7 @@ namespace Mobile.Services
                 throw new UnauthorizedAccessException("You must be an administrator to update users.");
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Failed to update user: {errorContent}");
-        }
-
-        // Method to bulk delete users
-        public async Task<BulkDeleteResultDto> BulkDeleteUsersAsync(List<string> userIds)
-        {
-            EnsureAuthenticated();
-
-            Console.WriteLine($"Bulk deleting {userIds.Count} users");
-
-            var json = JsonConvert.SerializeObject(userIds);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync("admin/users/bulk-delete", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseJson = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<BulkDeleteResultDto>(responseJson);
-            }
-
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                throw new UnauthorizedAccessException("You must be an administrator to delete users.");
-            }
-
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Failed to bulk delete users: {errorContent}");
+            throw new Exception($"Failed to update user: {responseContent}");
         }
 
         public async Task<bool> DirectResetPasswordAsync(string email, string newPassword)

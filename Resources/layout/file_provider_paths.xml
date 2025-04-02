@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content">
+	<external-path
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:name="external_files"
+		android:path="." />
+	<cache-path
+		android:name="cache_files"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:path="." />
+	<files-path
+		android:layout_width="match_parent"
+		android:name="files"
+		android:path="."
+		android:layout_height="wrap_content" />
+</paths>
